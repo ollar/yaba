@@ -1,1 +1,12 @@
 site_name: My Docs
+
+theme:
+  name: null
+  custom_dir: 'light_theme/'
+
+  analytics:
+    gtag: null
+  navigation_depth: 3
+
+repo_name: Github
+repo_url: https://github.com/ollar/yaba

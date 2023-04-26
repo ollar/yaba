@@ -1,0 +1,27 @@
+{% macro render_nav_item(nav_item) -%}
+  <li>
+    {% if nav_item.is_section %}
+      <a class="nav-link nav-link--is-section">{{nav_item.title}}</a>
+    {% else %}
+      <a href="{{ nav_item.url|url }}" class="nav-link {% if nav_item.active %}nav-link--active{% endif %} {% if nav_item.is_section %}nav-link--is-section{% endif %} {% if nav_item.is_page %}nav-link--is-page{% endif %} {% if nav_item.is_link %}nav-link--is-link{% endif %}">{{nav_item.title}}</a>
+    {% endif %}
+
+    {% if nav_item.children %}
+      <ul>
+        {%- for children_item in nav_item.children %}
+          {{ render_nav_item(children_item) }}
+        {%- endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{%- endmacro %}
+
+{% if nav|length>1 %}
+  <nav class="site-navigation">
+    <ul>
+      {%- for nav_item in nav %}
+        {{ render_nav_item(nav_item) }}
+      {%- endfor %}
+    </ul>
+  </nav>
+{% endif %}

@@ -1,0 +1,25 @@
+<aside class="toc" role="complementary">
+  {% macro toc_item(item) %}
+    {%- if item.level <= config.theme.navigation_depth %}
+      <li class="toc_list-item" data-level="{{ item.level }}">
+        <a href="{{ item.url }}" class="toc_link">{{ item.title }}</a>
+
+        {% if item.children %}
+        <ul class="toc_list">
+        {%- for child in item.children %}
+          {{- toc_item(child) }}
+        {%- endfor %}
+        </ul>
+        {% endif %}
+      </li>
+    {%- endif %}
+  {%- endmacro %}
+
+  <div class="toc__content">
+    <ul class="toc_list">
+    {%- for item in page.toc %}
+      {{ toc_item(item) }}
+    {%- endfor %}
+    </ul>
+  </div>
+</aside>

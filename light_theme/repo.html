@@ -1,0 +1,35 @@
+{%- block repo %}
+  <ul class="repo">
+  {%- if page and page.edit_url %}
+    <li class="repo__item">
+      <a href="{{ page.edit_url }}" class="nav-link">
+        {%- if config.repo_name == 'GitHub' -%}
+          <i class="fa fa-github"></i> {% trans repo_name=config.repo_name %}Edit on {{ repo_name }}{% endtrans %}
+        {%- elif config.repo_name == 'Bitbucket' -%}
+          <i class="fa fa-bitbucket"></i> {% trans repo_name=config.repo_name %}Edit on {{ repo_name }}{% endtrans %}
+        {%- elif config.repo_name == 'GitLab' -%}
+          <i class="fa fa-gitlab"></i> {% trans repo_name=config.repo_name %}Edit on {{ repo_name }}{% endtrans %}
+        {%- elif config.repo_name -%}
+          {% trans repo_name=config.repo_name%}Edit on {{ repo_name }}{% endtrans %}
+        {% else %}
+          {% trans repo_name=config.repo_name%}Edit{% endtrans %}
+        {%- endif -%}
+      </a>
+    </li>
+  {%- elif config.repo_url %}
+    <li class="repo__item">
+      <a href="{{ config.repo_url }}" class="nav-link">
+        {%- if config.repo_name == 'GitHub' -%}
+          <i class="fa fa-github"></i> {{ config.repo_name }}
+        {%- elif config.repo_name == 'Bitbucket' -%}
+          <i class="fa fa-bitbucket"></i> {{ config.repo_name }}
+        {%- elif config.repo_name == 'GitLab' -%}
+          <i class="fa fa-gitlab"></i> {{ config.repo_name }}
+        {%- else -%}
+        {{ config.repo_name }}
+        {%- endif -%}
+      </a>
+    </li>
+  {%- endif %}
+  </ul>
+{%- endblock %}
