@@ -27,25 +27,20 @@
     {%- endblock %}
 
     {%- block styles %}
+      <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"> -->
+      <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+      <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kimeiga/bahunya/dist/bahunya.min.css"> -->
+
       <link href="{{ 'css/main.css'|url }}" rel="stylesheet">
-      {%- if config.theme.highlightjs %}
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/{{ config.theme.hljs_style }}.min.css">
-      {%- endif %}
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
       {%- for path in extra_css %}
       <link href="{{ path }}" rel="stylesheet">
       {%- endfor %}
     {%- endblock %}
 
     {%- block libs %}
-      <!-- <script src="{{ 'js/jquery-1.10.2.min.js'|url }}" defer></script> -->
-      <!-- <script src="{{ 'js/bootstrap.min.js'|url }}" defer></script> -->
-      {%- if config.theme.highlightjs %}
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
-        {%- for lang in config.theme.hljs_languages %}
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/{{lang}}.min.js"></script>
-        {%- endfor %}
-        <script>hljs.initHighlightingOnLoad();</script>
-      {%- endif %}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script>
     {%- endblock %}
 
     {%- block analytics %}
