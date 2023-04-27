@@ -1,0 +1,38 @@
+body {
+  display: grid;
+  grid-template-columns: minmax(1rem, 1fr) minmax(360px, 800px) 200px minmax(1rem, 1fr);
+  grid-template-rows: auto;
+  grid-column-gap: 1rem;
+  grid-row-gap: 2rem;
+  grid-template-areas: '. sitename nav .'
+                       '. content toc .'
+                       '. footer prev-next .';
+}
+
+body > footer, main {
+  all: unset;
+}
+
+.site-name {
+  grid-area: sitename;
+}
+
+.site-navigation {
+  grid-area: nav;
+}
+
+.content {
+  grid-area: content;
+}
+
+.toc {
+  grid-area: toc;
+}
+
+.prev-next {
+  grid-area: prev-next;
+}
+
+.footer {
+  grid-area: footer;
+}
