@@ -1,4 +1,4 @@
-site_name: My Docs
+site_name: !ENV [SITE_NAME, 'yaba']
 
 theme:
   name: null
