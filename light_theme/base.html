@@ -45,13 +45,12 @@
       <script>hljs.initHighlightingOnLoad();</script>
     {%- endblock %}
 
-    {%- block analytics %}
-      {% include "analytics.html" %}
-    {%- endblock %}
-
     {%- block extrahead %} {% endblock %}
   </head>
   <body{% if page and page.is_homepage %} class="homepage"{% endif %}>
+    {%- block analytics %}
+      {% include "analytics.html" %}
+    {%- endblock %}
 
     {% include "site-name.html" %}
 
