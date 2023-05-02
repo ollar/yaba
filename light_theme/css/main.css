@@ -1,11 +1,10 @@
 body {
   margin: 0;
   display: grid;
-  grid-template-columns: minmax(0.5rem, 1fr) minmax(360px, 800px) minmax(0, 200px) minmax(0.5rem, 1fr);
+  grid-template-columns: minmax(0.5rem, 1fr) minmax(300px, 800px) 40px minmax(0.5rem, 1fr);
   grid-template-rows: auto;
   grid-row-gap: 2rem;
-  grid-template-areas: '. sitename sitename .'
-                       '. search search .'
+  grid-template-areas: '. sitename search .'
                        '. nav nav .'
                        '. toc toc .'
                        '. content content .'
@@ -16,8 +15,8 @@ body {
 @media screen and (min-width: 35.5em) {
   body {
     grid-column-gap: 1rem;
-    grid-template-areas: '. sitename nav .'
-                         '. search search .'
+    grid-template-areas: '. sitename search .'
+                         '. nav nav .'
                          '. toc toc .'
                          '. content content .'
                          '. footer prev-next .';
@@ -26,8 +25,9 @@ body {
 
 @media screen and (min-width: 48em) {
   body {
-    grid-template-areas: '. sitename nav .'
-                         '. search search .'
+    grid-template-columns: minmax(0.5rem, 1fr) minmax(300px, 600px) 200px minmax(0.5rem, 1fr);
+    grid-template-areas: '. sitename search .'
+                         '. nav nav .'
                          '. content toc .'
                          '. footer prev-next .';
   }
@@ -41,13 +41,15 @@ body > footer, main {
   grid-area: sitename;
 }
 
-.search-wrapper {
+.search-button {
   grid-area: search;
+  align-self: center;
+  justify-self: center;
 }
 
 .site-navigation {
   grid-area: nav;
-  justify-self: flex-end;
+  position: relative;
 }
 
 .content {
@@ -65,3 +67,80 @@ body > footer, main {
 .footer {
   grid-area: footer;
 }
+
+.search-wrapper {
+  display: none;
+  position: fixed;
+  background-color: #fff;
+  height: 100vh;
+  width: 100vw;
+  grid-template-columns: minmax(1rem, 1fr) minmax(300px, 800px) 30px minmax(1rem, 1fr);
+  grid-template-rows: minmax(0, 200px) repeat(3, min-content) max(70vh, 400px) minmax(0, 200px);
+  grid-row-gap: 1rem;
+  grid-template-areas: ". . . ."
+                       ". title close-button ."
+                       ". input input ."
+                       ". results results ."
+                       ". . . .";
+}
+
+.search-wrapper--expanded {
+  display: grid;
+}
+
+.search-wrapper__close-button {
+  grid-area: close-button;
+  justify-self: flex-end;
+}
+
+.search-wrapper__title {
+  grid-area: title;
+  margin: 0;
+}
+
+.search-wrapper__input {
+  grid-area: input;
+  margin: 0;
+}
+
+.search-wrapper__results {
+  margin: 0;
+  grid-area: results;
+  overflow: auto;
+}
+
+.toc__list {
+  margin: 0;
+}
+
+.site-navigation li {
+  position: relative;
+}
+
+.site-navigation ul{
+  margin: 0;
+}
+
+.site-navigation li:hover ul{
+  display: block;
+}
+
+.site-navigation ul ul {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.site-navigation ul ul li {
+  display: block;
+  padding: 4px;
+}
+
+
+.site-navigation input:checked + ul {
+  display: block;
+}
+

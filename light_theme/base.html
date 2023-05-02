@@ -54,10 +54,6 @@
 
     {% include "site-name.html" %}
 
-    {% include "prev-next.html" %}
-
-    {# % include "repo.html" % #}
-
     {% include "toc.html" %}
 
     {% include "nav.html" %}
@@ -66,7 +62,7 @@
 
     {% include "footer.html" %}
 
-    {% include "search.html" %}
+    {% include "prev-next.html" %}
 
     {%- block scripts %}
       <script>
@@ -77,6 +73,8 @@
       <script src="{{ path }}" defer></script>
       {%- endfor %}
     {%- endblock %}
+
+    {% include "search.html" %}
 
     {# % if 'search' in config['plugins'] %}{%- include "search-modal.html" %}{% endif %}
     {%- include "keyboard-modal.html" % #}

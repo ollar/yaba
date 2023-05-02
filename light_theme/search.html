@@ -1,9 +1,35 @@
-<div class="search-wrapper">
-  <h2 id="search">Search Results</h2>
+<button class="search-button" id="search-button" type="button">
+  🔍
+</button>
 
-  <input name="q" id="mkdocs-search-query" type="text" >
+<div class="search-wrapper" id="search-wrapper">
+  <button class="search-wrapper__close-button" id="close-button" type="button">
+    ❌
+  </button>
+  <h2 class="search-wrapper__title">Search Results</h2>
 
-  <div id="mkdocs-search-results">
+  <input class="search-wrapper__input" name="q" id="mkdocs-search-query" type="text" >
+
+  <div class="search-wrapper__results" id="mkdocs-search-results">
     Sorry, page not found.
   </div>
 </div>
+
+<script type="text/javascript">
+  const $button = document.getElementById('search-button');
+  const $closeButton = document.getElementById('close-button');
+  const $wrapper = document.getElementById('search-wrapper');
+  let isSearchModalExpanded = false;
+
+  function updateModalVisibility() {
+    isSearchModalExpanded = !isSearchModalExpanded;
+    if (isSearchModalExpanded) {
+      $wrapper.classList.add('search-wrapper--expanded');
+    } else {
+      $wrapper.classList.remove('search-wrapper--expanded');
+    }
+  }
+
+  $button.addEventListener('click', updateModalVisibility);
+  $closeButton.addEventListener('click', updateModalVisibility);
+</script>
