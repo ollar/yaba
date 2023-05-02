@@ -8,5 +8,11 @@ theme:
     gtag: null
   navigation_depth: 3
 
+plugins:
+  - search:
+      lang:
+        - ru
+        - en
+
 repo_name: Github
 repo_url: https://github.com/ollar/yaba

@@ -44,7 +44,7 @@ body > footer, main {
 .search-button {
   grid-area: search;
   align-self: center;
-  justify-self: center;
+  justify-self: flex-end;
 }
 
 .site-navigation {
@@ -75,7 +75,7 @@ body > footer, main {
   height: 100vh;
   width: 100vw;
   grid-template-columns: minmax(1rem, 1fr) minmax(300px, 800px) 30px minmax(1rem, 1fr);
-  grid-template-rows: minmax(0, 200px) repeat(3, min-content) max(70vh, 400px) minmax(0, 200px);
+  grid-template-rows: minmax(0, 200px) repeat(2, min-content) max(70vh, 400px) minmax(0, 200px);
   grid-row-gap: 1rem;
   grid-template-areas: ". . . ."
                        ". title close-button ."
@@ -91,6 +91,7 @@ body > footer, main {
 .search-wrapper__close-button {
   grid-area: close-button;
   justify-self: flex-end;
+  align-self: center;
 }
 
 .search-wrapper__title {
@@ -115,10 +116,17 @@ body > footer, main {
 
 .site-navigation li {
   position: relative;
+  padding: 0;
+}
+
+.site-navigation a {
+  display: block;
+  padding: 4px 10px;
 }
 
 .site-navigation ul{
   margin: 0;
+  display: flex;
 }
 
 .site-navigation li:hover ul{
@@ -136,7 +144,6 @@ body > footer, main {
 
 .site-navigation ul ul li {
   display: block;
-  padding: 4px;
 }
 
 
@@ -144,3 +151,13 @@ body > footer, main {
   display: block;
 }
 
+.prev-next {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0;
+}
+
+.prev-next li {
+  display: block;
+}

@@ -1,7 +1,7 @@
 {% macro render_nav_item(nav_item) -%}
   <li class="nav-item {% if nav_item.active %}nav-item--active{% endif %}">
     {% if nav_item.is_section %}
-      <a class="nav-link nav-link--is-section {% if nav_item.active %}nav-link--active{% endif %}">{{nav_item.title}}</a>
+      <a class="nav-link nav-link--is-section {% if nav_item.active %}nav-link--active{% endif %}">{{nav_item.title}} ↓</a>
     {% else %}
       <a href="{{ nav_item.url|url }}" class="nav-link {% if nav_item.active %}nav-link--active{% endif %} {% if nav_item.is_section %}nav-link--is-section{% endif %} {% if nav_item.is_page %}nav-link--is-page{% endif %} {% if nav_item.is_link %}nav-link--is-link{% endif %}">{{nav_item.title}}</a>
     {% endif %}
