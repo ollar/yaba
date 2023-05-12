@@ -3,9 +3,6 @@ site_name: !ENV [SITE_NAME, 'yaba']
 theme:
   name: null
   custom_dir: 'light_theme/'
-
-  analytics:
-    gtag: null
   navigation_depth: 3
 
 plugins:

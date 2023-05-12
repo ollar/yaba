@@ -45,6 +45,10 @@ body > footer, main {
   grid-area: search;
   align-self: center;
   justify-self: flex-end;
+
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
 .site-navigation {
@@ -92,6 +96,10 @@ body > footer, main {
   grid-area: close-button;
   justify-self: flex-end;
   align-self: center;
+
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
 .search-wrapper__title {
