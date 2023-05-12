@@ -13,3 +13,8 @@ plugins:
 
 repo_name: Github
 repo_url: https://github.com/ollar/yaba
+
+markdown_extensions:
+  - footnotes
+  - abbr
+  - def_list
