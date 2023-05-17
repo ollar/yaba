@@ -1,5 +1,6 @@
 site_name: !ENV [SITE_NAME, 'yaba']
 site_author: Oleg Larkin
+site_url: http://yaba.su/
 
 theme:
   name: null
