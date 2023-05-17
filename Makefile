@@ -1,3 +1,7 @@
+dev:
+	mkdocs serve --watch-theme
+
+
 extract_locales:
 	pybabel extract --no-wrap --omit-header --mapping-file light_theme/babel.cfg --output-file light_theme/messages.pot light_theme
 
