@@ -4,6 +4,7 @@ theme:
   name: null
   custom_dir: 'light_theme/'
   navigation_depth: 3
+  locale: ru
 
 plugins:
   - search:
@@ -11,8 +12,9 @@ plugins:
         - ru
         - en
 
-repo_name: Github
+repo_name: GitHub
 repo_url: https://github.com/ollar/yaba
+# edit_uri: docs
 
 markdown_extensions:
   - footnotes

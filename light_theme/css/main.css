@@ -169,3 +169,7 @@ body > footer, main {
 .prev-next li {
   display: block;
 }
+
+.repo {
+  margin: 0;
+}

@@ -1,0 +1,20 @@
+#: light_theme/prev-next.html:6
+msgid "Previous article"
+msgstr ""
+
+#: light_theme/prev-next.html:11
+msgid "Next article"
+msgstr ""
+
+#: light_theme/repo.html:6
+msgid "Edit on"
+msgstr ""
+
+#: light_theme/search.html:9
+msgid "Search Results"
+msgstr ""
+
+#: light_theme/search.html:14
+msgid "Sorry, page not found."
+msgstr ""
+
