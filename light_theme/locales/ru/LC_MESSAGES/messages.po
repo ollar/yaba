@@ -21,11 +21,11 @@ msgstr ""
 
 #: light_theme/prev-next.html:6
 msgid "Previous article"
-msgstr "Предыдущая статья"
+msgstr "Назад"
 
 #: light_theme/prev-next.html:11
 msgid "Next article"
-msgstr "Следующая статья"
+msgstr "Вперед"
 
 #: light_theme/repo.html:6
 msgid "Edit on"
