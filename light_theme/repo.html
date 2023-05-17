@@ -1,4 +1,5 @@
 {%- block repo %}
+  {% if page.meta.is_editable %}
   <div class="repo">
   {%- if page and page.edit_url %}
     <a href="{{ page.edit_url }}">
@@ -9,5 +10,6 @@
       {{ config.repo_name }}
     </a>
   {%- endif %}
+  {% endif %}
   </div>
 {%- endblock %}
