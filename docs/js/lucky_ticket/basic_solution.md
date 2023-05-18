@@ -72,7 +72,7 @@ let startTime, endTime;
 
 function runApp() {
   startTime = performance.now();
-  for (let i = 0; i < 999_999; i++) {
+  for (let i = 1; i < 1_000_000; i++) {
     const $ticket = createTicket(i);
     $app.appendChild($ticket);
   }
@@ -80,7 +80,7 @@ function runApp() {
   console.log(`Call took ${endTime - startTime} milliseconds`);
 }
 
-$start.addEventListener('click', runApp.bind(null, 0));
+$start.addEventListener('click', runApp);
 ```
 
 ### Запуск сервера
@@ -113,11 +113,11 @@ Chrome – `Call took 1614 milliseconds`, но в итоге -> Aw, Snap!
 
 ```js
 function runApp(i) {
-  if (i === 0) {
+  if (i === 1) {
     startTime = performance.now();
   }
 
-  if (i >= 999_999) {
+  if (i >= 1_000_000) {
     const endTime = performance.now();
     console.log(`Call took ${endTime - startTime} milliseconds`);
     return;
@@ -128,6 +128,8 @@ function runApp(i) {
 
   return runApp(++i);
 }
+
+$start.addEventListener('click', () => runApp(1));
 ```
 
 `Uncaught InternalError: too much recursion` - браузер тоже не любит рекурсии. По крайней мере, в том виде, в которым мы её записали. Сработала защита от бесконечного вызова функции[^2] с выходом в ошибку. Есть попытки добавить в браузеры механизм хвостовой рекурсии[^3], где эта проблема не будет актуальна, но пока она [не реализована](http://kangax.github.io/compat-table/es6/#test-proper_tail_calls_(tail_call_optimisation)).
