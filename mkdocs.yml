@@ -29,3 +29,4 @@ markdown_extensions:
   - footnotes
   - abbr
   - def_list
+  - nl2br
