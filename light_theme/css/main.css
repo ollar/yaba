@@ -137,7 +137,7 @@ body > footer, main {
   display: flex;
 }
 
-.site-navigation li:hover ul{
+.site-navigation li:hover > ul{
   display: block;
 }
 
@@ -154,11 +154,6 @@ body > footer, main {
   display: block;
 }
 
-
-.site-navigation input:checked + ul {
-  display: block;
-}
-
 .prev-next {
   display: flex;
   justify-content: space-between;
@@ -168,6 +163,10 @@ body > footer, main {
 
 .prev-next li {
   display: block;
+}
+
+.nav-link.disabled {
+  color: #ccc;
 }
 
 .repo {
