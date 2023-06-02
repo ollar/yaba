@@ -57,7 +57,9 @@
 
     {% include "site-name.html" %}
 
+    {% if page and not page.is_homepage %}
     {% include "toc.html" %}
+    {% endif %}
 
     {% include "nav.html" %}
 
@@ -65,7 +67,9 @@
 
     {% include "footer.html" %}
 
+    {% if page and not page.is_homepage %}
     {% include "prev-next.html" %}
+    {% endif %}
 
     {%- block scripts %}
       <script>
