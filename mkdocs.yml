@@ -16,6 +16,8 @@ plugins:
 
 nav:
   - Домой: 'index.md'
+  - Жизнь:
+    - Дом Совы на Тихой: life/priozersk/dom-sovi.md
   - JS:
     - Счастливый билетик:
       - js/lucky_ticket/index.md
