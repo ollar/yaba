@@ -18,6 +18,7 @@ nav:
   - Домой: 'index.md'
   - Жизнь:
     - Дом Совы на Тихой: life/priozersk/dom-sovi.md
+    - Великий Новгород: life/velikiy-novgorod/index.md
   - JS:
     - Счастливый билетик:
       - js/lucky_ticket/index.md
