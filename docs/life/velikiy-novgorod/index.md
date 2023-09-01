@@ -2,8 +2,6 @@ social_tags_title: г. Великий Новгород
 description: г. Великий Новгород
 author: @ollar
 date_created: 2023-09-01
-is_editable: false
-
 
 # Великий Новгород
 
