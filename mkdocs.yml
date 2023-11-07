@@ -34,3 +34,6 @@ markdown_extensions:
   - abbr
   - def_list
   - nl2br
+
+hooks:
+  - my_hooks.py
