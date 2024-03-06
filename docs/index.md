@@ -1,6 +1,7 @@
-1. ### [День города Великий Новгород](life/velikiy-novgorod)
-
-1. ### [Выходные в домике Совы](life/priozersk/dom-sovi)
-
-1. ### [Задача по JS "счастливый билетик"](js/lucky_ticket)
-В этой задаче разобраны методы оптимизации работы JS кода и рендера браузера.
+{% for nav_item in navigation %}
+{% if nav_item.is_section and nav_item.title == 'Жизнь' %}
+{% for page in nav_item.children %}
+1. ### [{{page.title}}]({{page.url}})
+{% endfor %}
+{% endif %}
+{% endfor %}
