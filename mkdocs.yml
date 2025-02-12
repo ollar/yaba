@@ -23,6 +23,7 @@ nav:
     - Выборг: life/viborg/index.md
   - Habr:
     - Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1: habr/anti-dpi.md
+    - Мой первый контейнер без Docker: habr/docker-no-docker.md
   # - JS:
   #   - Счастливый билетик:
   #     - js/lucky_ticket/index.md
