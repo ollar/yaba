@@ -30,6 +30,7 @@ nav:
   #     - js/lucky_ticket/basic_solution.md
   #     - js/lucky_ticket/tasks_separation.md
   #     - js/lucky_ticket/sixty-fps.md
+  - 'asdad': how-to-setup-neovim-2024.md
 
 repo_name: GitHub
 repo_url: https://github.com/ollar/yaba
