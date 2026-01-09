@@ -1,5 +1,5 @@
 PATH
-  remote: minimi
+  remote: _minimi
   specs:
     minimi (0.1.0)
       jekyll (~> 4.4)
