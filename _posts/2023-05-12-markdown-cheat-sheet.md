@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Markdown: Syntax"
+categories: other
 ---
 
 [Original page](https://daringfireball.net/projects/markdown/syntax)

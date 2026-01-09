@@ -1,10 +1,9 @@
 ---
 social_tags_title: г. Великий Новгород
 description: поездка в г. Великий Новгород, 25 августа 2023
-author: "@ollar"
-date_created: 2023-09-01
 title: "Великий Новгород" 
 layout: post
+categories: life
 ---
 
 

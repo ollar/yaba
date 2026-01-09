@@ -1,11 +1,9 @@
 ---
 social_tags_title: Мой первый контейнер без Docker
-author: "@ollar"
-date_created: 2025-02-12
 tags: "linux,namespace,контейнер,cgroups,docker,контейнеризация,cgroup v2"
 layout: post
 title: Мой первый контейнер без Docker
-collections: habr
+categories: habr
 ---
 
 <https://habr.com/ru/articles/881428/>
