@@ -1,0 +1,36 @@
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  {% if page.description %}
+  <meta name="description" content="{{page.meta.description}}" />
+  {% elsif page and page.is_homepage %}
+  <meta name="description" content="{{ config['site_description'] }}" />
+  {% endif %}
+
+  {% if page.meta.author %}
+  <meta name="author" content="{{ page.meta.author }}">
+  {% elsif config.site_author %}
+  <meta name="author" content="{{ config.site_author }}">
+  {% endif %}
+
+  {% if page and page.canonical_url %}<link rel="canonical" href="{{ page.canonical_url }}">{% endif %}
+  {% if config.site_favicon %}<link rel="shortcut icon" href="{{ config.site_favicon|url }}">
+  {% else %}<link rel="shortcut icon" href="{{ 'img/favicon.ico'|url }}">{% endif %}
+
+  <!-- <meta property="og:title" content="{{page.meta.social_tags_title}}" /> -->
+  <!-- <meta property="og:description" content="{{page.meta.description}}" /> -->
+  <!-- <meta property="og:url" content="{{page.canonical_url}}" /> -->
+  <!-- <meta property="og:image" content="{{page.meta.social_tags_image}}" /> -->
+
+  <title>{% unless page.layout == 'home' %}{{ page.title }} - {% endunless %}{{ site.site_name }}</title>
+
+  <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+
+  <link href="{{ '/assets/css/main.css'|url }}" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css"> -->
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script> -->
+  <!-- <script>hljs.initHighlightingOnLoad();</script> -->
+
+</head>

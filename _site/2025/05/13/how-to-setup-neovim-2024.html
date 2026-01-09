@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  
+
+  
+
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+
+  <!-- <meta property="og:title" content="" /> -->
+  <!-- <meta property="og:description" content="" /> -->
+  <!-- <meta property="og:url" content="" /> -->
+  <!-- <meta property="og:image" content="" /> -->
+
+  <title>How I Setup Neovim On My Mac To Make it AMAZING in 2024 - yaba</title>
+
+  <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+
+  <link href="/assets/css/main.css" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css"> -->
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script> -->
+  <!-- <script>hljs.initHighlightingOnLoad();</script> -->
+
+</head>
+<body>
+
+    <h1 class="site-name">
+  <a class="navbar-brand" href="http://localhost:4000">yaba</a>
+</h1>
+<nav class="site-navigation"><a href="/2025/12/03/build-micro-linux.html">Собираем Linux, который весит меньше, чем мем с котиком, ну или почти…</a><a href="/2025/05/13/how-to-setup-neovim-2024.html">How I Setup Neovim On My Mac To Make it AMAZING in 2024</a><a href="/2025/02/12/docker-no-docker.html">Мой первый контейнер без Docker</a><a href="/2024/12/27/anti-dpi.html">Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1</a><a href="/2024/05/07/viborg.html">Выборг</a><a href="/2023/09/01/velikiy-novgorod.html">Великий Новгород</a><a href="/2023/06/14/dom-sovi.html">Дом Cовы на р.Тихой</a><a href="/2023/05/12/markdown-cheat-sheet.html">Markdown: Syntax</a></nav>
+
+<main class="content">
+  <h1 class="page-title">
+    How I Setup Neovim On My Mac To Make it AMAZING in 2024
+  </h1>
+
+  <p>original: <a href="https://www.josean.com/posts/how-to-setup-neovim-2024">https://www.josean.com/posts/how-to-setup-neovim-2024</a></p>
+
+<p>You can find the source code for my config <a href="https://github.com/josean-dev/dev-environment-files">here</a>.</p>
+
+<h2 id="open-a-terminal-window">Open a terminal window</h2>
+
+<p>Open a terminal window on your mac. You will need a true color terminal for the colorscheme to work properly.</p>
+
+<p>I’m using <em>iTerm2</em></p>
+
+<h2 id="install-homebrew">Install Homebrew</h2>
+
+<p>Run the following command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+</code></pre></div></div>
+
+<p>If necessary, when prompted, enter your password here and press enter. If you haven’t installed the XCode Command Line Tools, when prompted, press enter and homebrew will install this as well.</p>
+
+<h2 id="add-to-path-only-apple-silicon-macbooks">Add To Path (Only Apple Silicon Macbooks)</h2>
+
+<p>After installing, add it to the path. This step shouldn’t be necessary on Intel macs.</p>
+
+<p>Run the following two commands to do so:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' &gt;&gt; ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+</code></pre></div></div>
+
+<h2 id="install-iterm2-if-necessary">Install iTerm2 If Necessary</h2>
+
+<p>If you don’t have a true color terminal, install iTerm2 with homebrew:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install --cask iterm2
+</code></pre></div></div>
+
+<p>Then switch to this terminal.</p>
+
+<h2 id="install-a-nerd-font">Install A Nerd Font</h2>
+
+<p>I use Meslo Nerd Font. To install it do:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew tap homebrew/cask-fonts
+</code></pre></div></div>
+
+<p>And then do:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install font-meslo-lg-nerd-font
+</code></pre></div></div>
+
+<p>Then open iTerm2 settings with <code class="language-plaintext highlighter-rouge">CMD+,</code> and under <strong>Profiles &gt; Text</strong> change the font to <strong>MesloLGS Nerd Font Mono</strong></p>
+
+<h2 id="install-neovim">Install Neovim</h2>
+
+<p>Run:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install neovim
+</code></pre></div></div>
+
+<h2 id="install-ripgrep">Install Ripgrep</h2>
+
+<p>Run:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install ripgrep
+</code></pre></div></div>
+
+<h2 id="install-node">Install Node</h2>
+
+<p>Run:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install node
+</code></pre></div></div>
+
+<h2 id="setup-initial-file-structure">Setup Initial File Structure</h2>
+
+<p>Your config will be located in <code class="language-plaintext highlighter-rouge">~/.config/nvim</code>.</p>
+
+<p>Let’s setup the initial file structure with the following commands:</p>
+
+<p>Make the nvim config directory.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p ~/.config/nvim
+</code></pre></div></div>
+
+<p><em><code class="language-plaintext highlighter-rouge">-p</code> is used to also create parent directories if they don’t already exist</em></p>
+
+<p>Move to this directory:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd ~/.config/nvim
+</code></pre></div></div>
+
+<p>Create main <code class="language-plaintext highlighter-rouge">init.lua</code> file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>touch init.lua
+</code></pre></div></div>
+
+<p>Create <code class="language-plaintext highlighter-rouge">lua/josean/core</code> directories:</p>
+
+<p><em>Any time I use “josean” you can replace this with your name</em></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p lua/josean/core
+</code></pre></div></div>
+
+<p>Create plugins directory (will have all of the plugin configs/specs):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p lua/josean/plugins
+</code></pre></div></div>
+
+<p>Create <code class="language-plaintext highlighter-rouge">lazy.lua</code> file (will be used to setup/configure lazy.nvim plugin manager):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>touch lua/josean/lazy.lua
+</code></pre></div></div>
+
+<h2 id="setup-core-options">Setup core options</h2>
+
+<p>Make sure you’re in <code class="language-plaintext highlighter-rouge">~/.config/nvim</code> and open the config:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nvim .
+</code></pre></div></div>
+
+<p>Navigate to the core folder and press <code class="language-plaintext highlighter-rouge">%</code> to create a file and call it: “options.lua”</p>
+
+<p>In this file add:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim.cmd("let g:netrw_liststyle = 3")
+</code></pre></div></div>
+
+<p>Open the explorer with <code class="language-plaintext highlighter-rouge">:Explore</code> and navigate to the main <code class="language-plaintext highlighter-rouge">init.lua</code> file.</p>
+
+<p>Add the following to load the basic options on startup:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require("josean.core.options")
+</code></pre></div></div>
+
+<p>Close Neovim with <code class="language-plaintext highlighter-rouge">:w</code> and reopen it with <code class="language-plaintext highlighter-rouge">nvim .</code></p>
+
+<p>Go back to “options.lua” and add the following to setup the rest of the options:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local opt = vim.opt -- for conciseness
+
+-- line numbers
+opt.relativenumber = true -- show relative line numbers
+opt.number = true -- shows absolute line number on cursor line (when relative number is on)
+
+-- tabs &amp; indentation
+opt.tabstop = 2 -- 2 spaces for tabs (prettier default)
+opt.shiftwidth = 2 -- 2 spaces for indent width
+opt.expandtab = true -- expand tab to spaces
+opt.autoindent = true -- copy indent from current line when starting new one
+
+-- line wrapping
+opt.wrap = false -- disable line wrapping
+
+-- search settings
+opt.ignorecase = true -- ignore case when searching
+opt.smartcase = true -- if you include mixed case in your search, assumes you want case-sensitive
+
+-- cursor line
+opt.cursorline = true -- highlight the current cursor line
+
+-- appearance
+
+-- turn on termguicolors for nightfly colorscheme to work
+-- (have to use iterm2 or any other true color terminal)
+opt.termguicolors = true
+opt.background = "dark" -- colorschemes that can be light or dark will be made dark
+opt.signcolumn = "yes" -- show sign column so that text doesn't shift
+
+-- backspace
+opt.backspace = "indent,eol,start" -- allow backspace on indent, end of line or insert mode start position
+
+-- clipboard
+opt.clipboard:append("unnamedplus") -- use system clipboard as default register
+
+-- split windows
+opt.splitright = true -- split vertical window to the right
+opt.splitbelow = true -- split horizontal window to the bottom
+
+-- turn off swapfile
+opt.swapfile = false
+</code></pre></div></div>
+
+<p>Do <code class="language-plaintext highlighter-rouge">:e lua/josean/core/init.lua</code></p>
+
+<p>Add the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require("josean.core.options")
+</code></pre></div></div>
+
+<p>Open the explorer with <code class="language-plaintext highlighter-rouge">:Explore</code> and go to the main init.lua file and change the require to:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require("josean.core")
+</code></pre></div></div>
+
+<h2 id="setup-core-keymaps">Setup core keymaps</h2>
+
+<p>Do <code class="language-plaintext highlighter-rouge">:e lua/josean/core/keymaps.lua</code></p>
+
+<p>And add the following to this file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- set leader key to space
+vim.g.mapleader = " "
+
+local keymap = vim.keymap -- for conciseness
+
+---------------------
+-- General Keymaps -------------------
+
+-- use jk to exit insert mode
+keymap.set("i", "jk", "&lt;ESC&gt;", { desc = "Exit insert mode with jk" })
+
+-- clear search highlights
+keymap.set("n", "&lt;leader&gt;nh", ":nohl&lt;CR&gt;", { desc = "Clear search highlights" })
+
+-- delete single character without copying into register
+-- keymap.set("n", "x", '"_x')
+
+-- increment/decrement numbers
+keymap.set("n", "&lt;leader&gt;+", "&lt;C-a&gt;", { desc = "Increment number" }) -- increment
+keymap.set("n", "&lt;leader&gt;-", "&lt;C-x&gt;", { desc = "Decrement number" }) -- decrement
+
+-- window management
+keymap.set("n", "&lt;leader&gt;sv", "&lt;C-w&gt;v", { desc = "Split window vertically" }) -- split window vertically
+keymap.set("n", "&lt;leader&gt;sh", "&lt;C-w&gt;s", { desc = "Split window horizontally" }) -- split window horizontally
+keymap.set("n", "&lt;leader&gt;se", "&lt;C-w&gt;=", { desc = "Make splits equal size" }) -- make split windows equal width &amp; height
+keymap.set("n", "&lt;leader&gt;sx", "&lt;cmd&gt;close&lt;CR&gt;", { desc = "Close current split" }) -- close current split window
+
+keymap.set("n", "&lt;leader&gt;to", "&lt;cmd&gt;tabnew&lt;CR&gt;", { desc = "Open new tab" }) -- open new tab
+keymap.set("n", "&lt;leader&gt;tx", "&lt;cmd&gt;tabclose&lt;CR&gt;", { desc = "Close current tab" }) -- close current tab
+keymap.set("n", "&lt;leader&gt;tn", "&lt;cmd&gt;tabn&lt;CR&gt;", { desc = "Go to next tab" }) --  go to next tab
+keymap.set("n", "&lt;leader&gt;tp", "&lt;cmd&gt;tabp&lt;CR&gt;", { desc = "Go to previous tab" }) --  go to previous tab
+keymap.set("n", "&lt;leader&gt;tf", "&lt;cmd&gt;tabnew %&lt;CR&gt;", { desc = "Open current buffer in new tab" }) --  move current buffer to new tab
+</code></pre></div></div>
+
+<p>Open the explorer with <code class="language-plaintext highlighter-rouge">:Explore</code>, open <code class="language-plaintext highlighter-rouge">lua/josean/core/init.lua</code> and add the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require("josean.core.options")
+require("josean.core.keymaps")
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim .</code></p>
+
+<h2 id="setup-lazynvim">Setup lazy.nvim</h2>
+
+<p>Go to “lazy.lua” and add the following to bootstrap lazy.nvim</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+</code></pre></div></div>
+
+<p>Then configure lazy.nvim with the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup("josean.plugins")
+</code></pre></div></div>
+
+<p><em>If you’re using your name instead of “josean”, change that to your name here as well</em></p>
+
+<p>Then open the explorer with <code class="language-plaintext highlighter-rouge">:Explore</code> and navigate to main <code class="language-plaintext highlighter-rouge">init.lua</code> file.</p>
+
+<p>Add the following to it:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>require("josean.core")
+require("josean.lazy")
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<p><strong>You can see the lazy.nvim UI now with <code class="language-plaintext highlighter-rouge">:Lazy</code> and you can close the UI with <code class="language-plaintext highlighter-rouge">q</code></strong></p>
+
+<h2 id="install-plenary--vim-tmux-navigator">Install plenary &amp; vim-tmux-navigator</h2>
+
+<p>Do <code class="language-plaintext highlighter-rouge">:e lua/josean/plugins/init.lua</code></p>
+
+<p>Add the following to install <strong>plenary</strong> and <strong>vim-tmux-navigator</strong>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-lua/plenary.nvim", -- lua functions that many plugins use
+  "christoomey/vim-tmux-navigator", -- tmux &amp; split window navigation
+}
+</code></pre></div></div>
+
+<p>After adding this, save the file and you can install manually by doing <code class="language-plaintext highlighter-rouge">:Lazy</code>, then typing <code class="language-plaintext highlighter-rouge">I</code>.</p>
+
+<p>After install, close the UI with <code class="language-plaintext highlighter-rouge">q</code> and you can manually load a plugin with <code class="language-plaintext highlighter-rouge">:Lazy reload vim-tmux-navigator</code> for example.</p>
+
+<p>Otherwise, you can also exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim .</code> and it’ll happen automatically.</p>
+
+<h2 id="install--configure-tokyonight-colorscheme">Install &amp; configure tokyonight colorscheme</h2>
+
+<p>Do <code class="language-plaintext highlighter-rouge">:e lua/josean/plugins/colorscheme.lua</code></p>
+
+<p>In this file add the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  {
+    "folke/tokyonight.nvim",
+    priority = 1000, -- make sure to load this before all the other start plugins
+    config = function()
+      local bg = "#011628"
+      local bg_dark = "#011423"
+      local bg_highlight = "#143652"
+      local bg_search = "#0A64AC"
+      local bg_visual = "#275378"
+      local fg = "#CBE0F0"
+      local fg_dark = "#B4D0E9"
+      local fg_gutter = "#627E97"
+      local border = "#547998"
+
+      require("tokyonight").setup({
+        style = "night",
+        on_colors = function(colors)
+          colors.bg = bg
+          colors.bg_dark = bg_dark
+          colors.bg_float = bg_dark
+          colors.bg_highlight = bg_highlight
+          colors.bg_popup = bg_dark
+          colors.bg_search = bg_search
+          colors.bg_sidebar = bg_dark
+          colors.bg_statusline = bg_dark
+          colors.bg_visual = bg_visual
+          colors.border = border
+          colors.fg = fg
+          colors.fg_dark = fg_dark
+          colors.fg_float = fg
+          colors.fg_gutter = fg_gutter
+          colors.fg_sidebar = fg_dark
+        end,
+      })
+      -- load the colorscheme here
+      vim.cmd([[colorscheme tokyonight]])
+    end,
+  },
+}
+</code></pre></div></div>
+
+<p>This will setup <strong>tokyonight</strong> as the colorscheme and modify some of its colors according to my preference.</p>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim .</code></p>
+
+<h2 id="setup-nvim-tree-file-explorer">Setup nvim-tree file explorer</h2>
+
+<p>Do <code class="language-plaintext highlighter-rouge">:e lua/josean/plugins/nvim-tree.lua</code></p>
+
+<p>Add the following to this file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-tree/nvim-tree.lua",
+  dependencies = "nvim-tree/nvim-web-devicons",
+  config = function()
+    local nvimtree = require("nvim-tree")
+
+    -- recommended settings from nvim-tree documentation
+    vim.g.loaded_netrw = 1
+    vim.g.loaded_netrwPlugin = 1
+
+    nvimtree.setup({
+      view = {
+        width = 35,
+        relativenumber = true,
+      },
+      -- change folder arrow icons
+      renderer = {
+        indent_markers = {
+          enable = true,
+        },
+        icons = {
+          glyphs = {
+            folder = {
+              arrow_closed = "", -- arrow when folder is closed
+              arrow_open = "", -- arrow when folder is open
+            },
+          },
+        },
+      },
+      -- disable window_picker for
+      -- explorer to work well with
+      -- window splits
+      actions = {
+        open_file = {
+          window_picker = {
+            enable = false,
+          },
+        },
+      },
+      filters = {
+        custom = { ".DS_Store" },
+      },
+      git = {
+        ignore = false,
+      },
+    })
+
+    -- set keymaps
+    local keymap = vim.keymap -- for conciseness
+
+    keymap.set("n", "&lt;leader&gt;ee", "&lt;cmd&gt;NvimTreeToggle&lt;CR&gt;", { desc = "Toggle file explorer" }) -- toggle file explorer
+    keymap.set("n", "&lt;leader&gt;ef", "&lt;cmd&gt;NvimTreeFindFileToggle&lt;CR&gt;", { desc = "Toggle file explorer on current file" }) -- toggle file explorer on current file
+    keymap.set("n", "&lt;leader&gt;ec", "&lt;cmd&gt;NvimTreeCollapse&lt;CR&gt;", { desc = "Collapse file explorer" }) -- collapse file explorer
+    keymap.set("n", "&lt;leader&gt;er", "&lt;cmd&gt;NvimTreeRefresh&lt;CR&gt;", { desc = "Refresh file explorer" }) -- refresh file explorer
+  end
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-which-key">Setup which-key</h2>
+
+<p>Which-key is great for seeing what keymaps you can use.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">which-key.lua</code></p>
+
+<p>Add this to the file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "folke/which-key.nvim",
+  event = "VeryLazy",
+  init = function()
+    vim.o.timeout = true
+    vim.o.timeoutlen = 500
+  end,
+  opts = {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-telescope-fuzzy-finder">Setup telescope fuzzy finder</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">telescope.lua</code></p>
+
+<p>Add this to the file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-telescope/telescope.nvim",
+  branch = "0.1.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "nvim-tree/nvim-web-devicons",
+  },
+  config = function()
+    local telescope = require("telescope")
+    local actions = require("telescope.actions")
+
+    telescope.setup({
+      defaults = {
+        path_display = { "smart" },
+        mappings = {
+          i = {
+            ["&lt;C-k&gt;"] = actions.move_selection_previous, -- move to prev result
+            ["&lt;C-j&gt;"] = actions.move_selection_next, -- move to next result
+            ["&lt;C-q&gt;"] = actions.send_selected_to_qflist + actions.open_qflist,
+          },
+        },
+      },
+    })
+
+    telescope.load_extension("fzf")
+
+    -- set keymaps
+    local keymap = vim.keymap -- for conciseness
+
+    keymap.set("n", "&lt;leader&gt;ff", "&lt;cmd&gt;Telescope find_files&lt;cr&gt;", { desc = "Fuzzy find files in cwd" })
+    keymap.set("n", "&lt;leader&gt;fr", "&lt;cmd&gt;Telescope oldfiles&lt;cr&gt;", { desc = "Fuzzy find recent files" })
+    keymap.set("n", "&lt;leader&gt;fs", "&lt;cmd&gt;Telescope live_grep&lt;cr&gt;", { desc = "Find string in cwd" })
+    keymap.set("n", "&lt;leader&gt;fc", "&lt;cmd&gt;Telescope grep_string&lt;cr&gt;", { desc = "Find string under cursor in cwd" })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-a-greeter">Setup a greeter</h2>
+
+<p>We’re gonna setup a greeter for Neovim startup with alpha-nvim</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">alpha.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "goolord/alpha-nvim",
+  event = "VimEnter",
+  config = function()
+    local alpha = require("alpha")
+    local dashboard = require("alpha.themes.dashboard")
+
+    -- Set header
+    dashboard.section.header.val = {
+      "                                                     ",
+      "  ███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗ ",
+      "  ████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║ ",
+      "  ██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║ ",
+      "  ██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║ ",
+      "  ██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║ ",
+      "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
+      "                                                     ",
+    }
+
+    -- Set menu
+    dashboard.section.buttons.val = {
+      dashboard.button("e", "  &gt; New File", "&lt;cmd&gt;ene&lt;CR&gt;"),
+      dashboard.button("SPC ee", "  &gt; Toggle file explorer", "&lt;cmd&gt;NvimTreeToggle&lt;CR&gt;"),
+      dashboard.button("SPC ff", "󰱼 &gt; Find File", "&lt;cmd&gt;Telescope find_files&lt;CR&gt;"),
+      dashboard.button("SPC fs", "  &gt; Find Word", "&lt;cmd&gt;Telescope live_grep&lt;CR&gt;"),
+      dashboard.button("SPC wr", "󰁯  &gt; Restore Session For Current Directory", "&lt;cmd&gt;SessionRestore&lt;CR&gt;"),
+      dashboard.button("q", " &gt; Quit NVIM", "&lt;cmd&gt;qa&lt;CR&gt;"),
+    }
+
+    -- Send config to alpha
+    alpha.setup(dashboard.opts)
+
+    -- Disable folding on alpha buffer
+    vim.cmd([[autocmd FileType alpha setlocal nofoldenable]])
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-automated-session-manager">Setup automated session manager</h2>
+
+<p>Automatic session management is great for auto saving sessions before exiting Neovim and getting back to work when you come back.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">auto-session.lua</code></p>
+
+<p>Add the following to this file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "rmagatti/auto-session",
+  config = function()
+    local auto_session = require("auto-session")
+
+    auto_session.setup({
+      auto_restore_enabled = false,
+      auto_session_suppress_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents", "~/Desktop/" },
+    })
+
+    local keymap = vim.keymap
+
+    keymap.set("n", "&lt;leader&gt;wr", "&lt;cmd&gt;SessionRestore&lt;CR&gt;", { desc = "Restore session for cwd" }) -- restore last workspace session for current directory
+    keymap.set("n", "&lt;leader&gt;ws", "&lt;cmd&gt;SessionSave&lt;CR&gt;", { desc = "Save session for auto session root dir" }) -- save workspace session for current working directory
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim .</code></p>
+
+<p>When working in a project, you can now close everything with <code class="language-plaintext highlighter-rouge">:qa</code> and when you open Neovim again in this directory you can use <code class="language-plaintext highlighter-rouge">&lt;leader&gt;wr</code> to restore your workspace/session.</p>
+
+<h2 id="disable-lazynvim-change_detection-notification">Disable lazy.nvim change_detection notification</h2>
+
+<p>Let’s disable the lazy.nvim change_detection notification which I find a bit annoying.</p>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">lazy.lua</code> and modify the code like so:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup("josean.plugins", {
+  change_detection = {
+    notify = false,
+  },
+})
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-bufferline-for-better-looking-tabs">Setup bufferline for better looking tabs</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">bufferline.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "akinsho/bufferline.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons" },
+  version = "*",
+  opts = {
+    options = {
+      mode = "tabs",
+      separator_style = "slant",
+    },
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-lualine-for-a-better-statusline">Setup lualine for a better statusline</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">lualine.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-lualine/lualine.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons" },
+  config = function()
+    local lualine = require("lualine")
+    local lazy_status = require("lazy.status") -- to configure lazy pending updates count
+
+    local colors = {
+      blue = "#65D1FF",
+      green = "#3EFFDC",
+      violet = "#FF61EF",
+      yellow = "#FFDA7B",
+      red = "#FF4A4A",
+      fg = "#c3ccdc",
+      bg = "#112638",
+      inactive_bg = "#2c3043",
+    }
+
+    local my_lualine_theme = {
+      normal = {
+        a = { bg = colors.blue, fg = colors.bg, gui = "bold" },
+        b = { bg = colors.bg, fg = colors.fg },
+        c = { bg = colors.bg, fg = colors.fg },
+      },
+      insert = {
+        a = { bg = colors.green, fg = colors.bg, gui = "bold" },
+        b = { bg = colors.bg, fg = colors.fg },
+        c = { bg = colors.bg, fg = colors.fg },
+      },
+      visual = {
+        a = { bg = colors.violet, fg = colors.bg, gui = "bold" },
+        b = { bg = colors.bg, fg = colors.fg },
+        c = { bg = colors.bg, fg = colors.fg },
+      },
+      command = {
+        a = { bg = colors.yellow, fg = colors.bg, gui = "bold" },
+        b = { bg = colors.bg, fg = colors.fg },
+        c = { bg = colors.bg, fg = colors.fg },
+      },
+      replace = {
+        a = { bg = colors.red, fg = colors.bg, gui = "bold" },
+        b = { bg = colors.bg, fg = colors.fg },
+        c = { bg = colors.bg, fg = colors.fg },
+      },
+      inactive = {
+        a = { bg = colors.inactive_bg, fg = colors.semilightgray, gui = "bold" },
+        b = { bg = colors.inactive_bg, fg = colors.semilightgray },
+        c = { bg = colors.inactive_bg, fg = colors.semilightgray },
+      },
+    }
+
+    -- configure lualine with modified theme
+    lualine.setup({
+      options = {
+        theme = my_lualine_theme,
+      },
+      sections = {
+        lualine_x = {
+          {
+            lazy_status.updates,
+            cond = lazy_status.has_updates,
+            color = { fg = "#ff9e64" },
+          },
+          { "encoding" },
+          { "fileformat" },
+          { "filetype" },
+        },
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>So that lualine can show pending plugin updates through lazy.nvim, open “lazy.lua” and modify it like so:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup("josean.plugins", {
+  checker = {
+    enabled = true,
+    notify = false,
+  },
+  change_detection = {
+    notify = false,
+  },
+})
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-dressingnvim">Setup dressing.nvim</h2>
+
+<p>Dressing.nvim improves the ui for <code class="language-plaintext highlighter-rouge">vim.ui.select</code> and <code class="language-plaintext highlighter-rouge">vim.ui.input</code></p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">dressing.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "stevearc/dressing.nvim",
+  event = "VeryLazy",
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-vim-maximizer">Setup vim-maximizer</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">vim-maximizer.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "szw/vim-maximizer",
+  keys = {
+    { "&lt;leader&gt;sm", "&lt;cmd&gt;MaximizerToggle&lt;CR&gt;", desc = "Maximize/minimize a split" },
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-treesitter">Setup treesitter</h2>
+
+<p>Treesitter is an awesome Neovim feature that provides better syntax highlighting, indentation, autotagging, incremental selection and many other cool features.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">treesitter.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-treesitter/nvim-treesitter",
+  event = { "BufReadPre", "BufNewFile" },
+  build = ":TSUpdate",
+  dependencies = {
+    "windwp/nvim-ts-autotag",
+  },
+  config = function()
+    -- import nvim-treesitter plugin
+    local treesitter = require("nvim-treesitter.configs")
+
+    -- configure treesitter
+    treesitter.setup({ -- enable syntax highlighting
+      highlight = {
+        enable = true,
+      },
+      -- enable indentation
+      indent = { enable = true },
+      -- enable autotagging (w/ nvim-ts-autotag plugin)
+      autotag = {
+        enable = true,
+      },
+      -- ensure these language parsers are installed
+      ensure_installed = {
+        "json",
+        "javascript",
+        "typescript",
+        "tsx",
+        "yaml",
+        "html",
+        "css",
+        "prisma",
+        "markdown",
+        "markdown_inline",
+        "svelte",
+        "graphql",
+        "bash",
+        "lua",
+        "vim",
+        "dockerfile",
+        "gitignore",
+        "query",
+        "vimdoc",
+        "c",
+      },
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = "&lt;C-space&gt;",
+          node_incremental = "&lt;C-space&gt;",
+          scope_incremental = false,
+          node_decremental = "&lt;bs&gt;",
+        },
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-indent-guides">Setup indent guides</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">indent-blankline.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "lukas-reineke/indent-blankline.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  main = "ibl",
+  opts = {
+    indent = { char = "┊" },
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-autocompletion">Setup autocompletion</h2>
+
+<p>We’re going to setup completion with “nvim-cmp” to get suggestions as we type.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">nvim-cmp.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "hrsh7th/nvim-cmp",
+  event = "InsertEnter",
+  dependencies = {
+    "hrsh7th/cmp-buffer", -- source for text in buffer
+    "hrsh7th/cmp-path", -- source for file system paths
+    {
+      "L3MON4D3/LuaSnip",
+      -- follow latest release.
+      version = "v2.*", -- Replace &lt;CurrentMajor&gt; by the latest released major (first number of latest release)
+      -- install jsregexp (optional!).
+      build = "make install_jsregexp",
+    },
+    "saadparwaiz1/cmp_luasnip", -- for autocompletion
+    "rafamadriz/friendly-snippets", -- useful snippets
+    "onsails/lspkind.nvim", -- vs-code like pictograms
+  },
+  config = function()
+    local cmp = require("cmp")
+
+    local luasnip = require("luasnip")
+
+    local lspkind = require("lspkind")
+
+    -- loads vscode style snippets from installed plugins (e.g. friendly-snippets)
+    require("luasnip.loaders.from_vscode").lazy_load()
+
+    cmp.setup({
+      completion = {
+        completeopt = "menu,menuone,preview,noselect",
+      },
+      snippet = { -- configure how nvim-cmp interacts with snippet engine
+        expand = function(args)
+          luasnip.lsp_expand(args.body)
+        end,
+      },
+      mapping = cmp.mapping.preset.insert({
+        ["&lt;C-k&gt;"] = cmp.mapping.select_prev_item(), -- previous suggestion
+        ["&lt;C-j&gt;"] = cmp.mapping.select_next_item(), -- next suggestion
+        ["&lt;C-b&gt;"] = cmp.mapping.scroll_docs(-4),
+        ["&lt;C-f&gt;"] = cmp.mapping.scroll_docs(4),
+        ["&lt;C-Space&gt;"] = cmp.mapping.complete(), -- show completion suggestions
+        ["&lt;C-e&gt;"] = cmp.mapping.abort(), -- close completion window
+        ["&lt;CR&gt;"] = cmp.mapping.confirm({ select = false }),
+      }),
+      -- sources for autocompletion
+      sources = cmp.config.sources({
+        { name = "luasnip" }, -- snippets
+        { name = "buffer" }, -- text within current buffer
+        { name = "path" }, -- file system paths
+      }),
+
+      -- configure lspkind for vs-code like pictograms in completion menu
+      formatting = {
+        format = lspkind.cmp_format({
+          maxwidth = 50,
+          ellipsis_char = "...",
+        }),
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-auto-closing-pairs">Setup auto closing pairs</h2>
+
+<p>This plugin will help us auto close surrounding characters like parens, brackets, curly braces, quotes, single quotes and tags</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">autopairs.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "windwp/nvim-autopairs",
+  event = { "InsertEnter" },
+  dependencies = {
+    "hrsh7th/nvim-cmp",
+  },
+  config = function()
+    -- import nvim-autopairs
+    local autopairs = require("nvim-autopairs")
+
+    -- configure autopairs
+    autopairs.setup({
+      check_ts = true, -- enable treesitter
+      ts_config = {
+        lua = { "string" }, -- don't add pairs in lua string treesitter nodes
+        javascript = { "template_string" }, -- don't add pairs in javscript template_string treesitter nodes
+        java = false, -- don't check treesitter on java
+      },
+    })
+
+    -- import nvim-autopairs completion functionality
+    local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+
+    -- import nvim-cmp plugin (completions plugin)
+    local cmp = require("cmp")
+
+    -- make autopairs and completion work together
+    cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-commenting-plugin">Setup commenting plugin</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">comment.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "numToStr/Comment.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
+    "JoosepAlviste/nvim-ts-context-commentstring",
+  },
+  config = function()
+    -- import comment plugin safely
+    local comment = require("Comment")
+
+    local ts_context_commentstring = require("ts_context_commentstring.integrations.comment_nvim")
+
+    -- enable comment
+    comment.setup({
+      -- for commenting tsx, jsx, svelte, html files
+      pre_hook = ts_context_commentstring.create_pre_hook(),
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-todo-comments">Setup todo comments</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">todo-comments.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "folke/todo-comments.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = { "nvim-lua/plenary.nvim" },
+  config = function()
+    local todo_comments = require("todo-comments")
+
+    -- set keymaps
+    local keymap = vim.keymap -- for conciseness
+
+    keymap.set("n", "]t", function()
+      todo_comments.jump_next()
+    end, { desc = "Next todo comment" })
+
+    keymap.set("n", "[t", function()
+      todo_comments.jump_prev()
+    end, { desc = "Previous todo comment" })
+
+    todo_comments.setup()
+  end,
+}
+</code></pre></div></div>
+
+<p>Look for <code class="language-plaintext highlighter-rouge">telescope.lua</code> with telescope with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ff</code></p>
+
+<p>Open this file and add the following to be able to look for todos with telescope:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "nvim-telescope/telescope.nvim",
+  branch = "0.1.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    "nvim-tree/nvim-web-devicons",
+    "folke/todo-comments.nvim",
+  },
+  config = function()
+    local telescope = require("telescope")
+    local actions = require("telescope.actions")
+
+    telescope.setup({
+      defaults = {
+        path_display = { "smart" },
+        mappings = {
+          i = {
+            ["&lt;C-k&gt;"] = actions.move_selection_previous, -- move to prev result
+            ["&lt;C-j&gt;"] = actions.move_selection_next, -- move to next result
+            ["&lt;C-q&gt;"] = actions.send_selected_to_qflist + actions.open_qflist,
+          },
+        },
+      },
+    })
+
+    telescope.load_extension("fzf")
+
+    -- set keymaps
+    local keymap = vim.keymap -- for conciseness
+
+    keymap.set("n", "&lt;leader&gt;ff", "&lt;cmd&gt;Telescope find_files&lt;cr&gt;", { desc = "Fuzzy find files in cwd" })
+    keymap.set("n", "&lt;leader&gt;fr", "&lt;cmd&gt;Telescope oldfiles&lt;cr&gt;", { desc = "Fuzzy find recent files" })
+    keymap.set("n", "&lt;leader&gt;fs", "&lt;cmd&gt;Telescope live_grep&lt;cr&gt;", { desc = "Find string in cwd" })
+    keymap.set("n", "&lt;leader&gt;fc", "&lt;cmd&gt;Telescope grep_string&lt;cr&gt;", { desc = "Find string under cursor in cwd" })
+    keymap.set("n", "&lt;leader&gt;ft", "&lt;cmd&gt;TodoTelescope&lt;cr&gt;", { desc = "Find todos" })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-substitution-plugin">Setup substitution plugin</h2>
+
+<p>This plugin allows us to use <code class="language-plaintext highlighter-rouge">s</code> followed by a <code class="language-plaintext highlighter-rouge">motion</code> to substitute text that was previously copied.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">substitute.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "gbprod/substitute.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  config = function()
+    local substitute = require("substitute")
+
+    substitute.setup()
+
+    -- set keymaps
+    local keymap = vim.keymap -- for conciseness
+
+    vim.keymap.set("n", "s", substitute.operator, { desc = "Substitute with motion" })
+    vim.keymap.set("n", "ss", substitute.line, { desc = "Substitute line" })
+    vim.keymap.set("n", "S", substitute.eol, { desc = "Substitute to end of line" })
+    vim.keymap.set("x", "s", substitute.visual, { desc = "Substitute in visual mode" })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-nvim-surround">Setup nvim-surround</h2>
+
+<p>This plugin is great for adding, deleting and modifying surrounding symbols and tags.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">surround.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "kylechui/nvim-surround",
+  event = { "BufReadPre", "BufNewFile" },
+  version = "*", -- Use for stability; omit to use `main` branch for the latest features
+  config = true,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-lsp">Setup LSP</h2>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">lua/josean/plugins</code> add a new directory with <code class="language-plaintext highlighter-rouge">a</code>, calling it <code class="language-plaintext highlighter-rouge">lsp/</code></p>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">lazy.lua</code> and modify it so that <code class="language-plaintext highlighter-rouge">lazy.nvim</code> knows about the new <code class="language-plaintext highlighter-rouge">lsp</code> directory like so:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({ { import = "josean.plugins" }, { import = "josean.plugins.lsp" } }, {
+  checker = {
+    enabled = true,
+    notify = false,
+  },
+  change_detection = {
+    notify = false,
+  },
+})
+</code></pre></div></div>
+
+<h3 id="setup-masonnvim">Setup mason.nvim</h3>
+
+<p>Mason.nvim is used to install and manage all of the language servers that you need for the languages you work for.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins/lsp</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">mason.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "williamboman/mason.nvim",
+  dependencies = {
+    "williamboman/mason-lspconfig.nvim",
+  },
+  config = function()
+    -- import mason
+    local mason = require("mason")
+
+    -- import mason-lspconfig
+    local mason_lspconfig = require("mason-lspconfig")
+
+    -- enable mason and configure icons
+    mason.setup({
+      ui = {
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗",
+        },
+      },
+    })
+
+    mason_lspconfig.setup({
+      -- list of servers for mason to install
+      ensure_installed = {
+        "tsserver",
+        "html",
+        "cssls",
+        "tailwindcss",
+        "svelte",
+        "lua_ls",
+        "graphql",
+        "emmet_ls",
+        "prismals",
+        "pyright",
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<h3 id="setup-nvim-lspconfig">Setup nvim-lspconfig</h3>
+
+<p>Nvim-lspconfig is used to configure your language servers.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins/lsp</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">lspconfig.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "neovim/nvim-lspconfig",
+  event = { "BufReadPre", "BufNewFile" },
+  dependencies = {
+    "hrsh7th/cmp-nvim-lsp",
+    { "antosha417/nvim-lsp-file-operations", config = true },
+    { "folke/neodev.nvim", opts = {} },
+  },
+  config = function()
+    -- import lspconfig plugin
+    local lspconfig = require("lspconfig")
+
+    -- import mason_lspconfig plugin
+    local mason_lspconfig = require("mason-lspconfig")
+
+    -- import cmp-nvim-lsp plugin
+    local cmp_nvim_lsp = require("cmp_nvim_lsp")
+
+    local keymap = vim.keymap -- for conciseness
+
+    vim.api.nvim_create_autocmd("LspAttach", {
+      group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+      callback = function(ev)
+        -- Buffer local mappings.
+        -- See `:help vim.lsp.*` for documentation on any of the below functions
+        local opts = { buffer = ev.buf, silent = true }
+
+        -- set keybinds
+        opts.desc = "Show LSP references"
+        keymap.set("n", "gR", "&lt;cmd&gt;Telescope lsp_references&lt;CR&gt;", opts) -- show definition, references
+
+        opts.desc = "Go to declaration"
+        keymap.set("n", "gD", vim.lsp.buf.declaration, opts) -- go to declaration
+
+        opts.desc = "Show LSP definitions"
+        keymap.set("n", "gd", "&lt;cmd&gt;Telescope lsp_definitions&lt;CR&gt;", opts) -- show lsp definitions
+
+        opts.desc = "Show LSP implementations"
+        keymap.set("n", "gi", "&lt;cmd&gt;Telescope lsp_implementations&lt;CR&gt;", opts) -- show lsp implementations
+
+        opts.desc = "Show LSP type definitions"
+        keymap.set("n", "gt", "&lt;cmd&gt;Telescope lsp_type_definitions&lt;CR&gt;", opts) -- show lsp type definitions
+
+        opts.desc = "See available code actions"
+        keymap.set({ "n", "v" }, "&lt;leader&gt;ca", vim.lsp.buf.code_action, opts) -- see available code actions, in visual mode will apply to selection
+
+        opts.desc = "Smart rename"
+        keymap.set("n", "&lt;leader&gt;rn", vim.lsp.buf.rename, opts) -- smart rename
+
+        opts.desc = "Show buffer diagnostics"
+        keymap.set("n", "&lt;leader&gt;D", "&lt;cmd&gt;Telescope diagnostics bufnr=0&lt;CR&gt;", opts) -- show  diagnostics for file
+
+        opts.desc = "Show line diagnostics"
+        keymap.set("n", "&lt;leader&gt;d", vim.diagnostic.open_float, opts) -- show diagnostics for line
+
+        opts.desc = "Go to previous diagnostic"
+        keymap.set("n", "[d", vim.diagnostic.goto_prev, opts) -- jump to previous diagnostic in buffer
+
+        opts.desc = "Go to next diagnostic"
+        keymap.set("n", "]d", vim.diagnostic.goto_next, opts) -- jump to next diagnostic in buffer
+
+        opts.desc = "Show documentation for what is under cursor"
+        keymap.set("n", "K", vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
+
+        opts.desc = "Restart LSP"
+        keymap.set("n", "&lt;leader&gt;rs", ":LspRestart&lt;CR&gt;", opts) -- mapping to restart lsp if necessary
+      end,
+    })
+
+    -- used to enable autocompletion (assign to every lsp server config)
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+
+    -- Change the Diagnostic symbols in the sign column (gutter)
+    -- (not in youtube nvim video)
+    local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+    for type, icon in pairs(signs) do
+      local hl = "DiagnosticSign" .. type
+      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+    end
+
+    mason_lspconfig.setup_handlers({
+      -- default handler for installed servers
+      function(server_name)
+        lspconfig[server_name].setup({
+          capabilities = capabilities,
+        })
+      end,
+      ["svelte"] = function()
+        -- configure svelte server
+        lspconfig["svelte"].setup({
+          capabilities = capabilities,
+          on_attach = function(client, bufnr)
+            vim.api.nvim_create_autocmd("BufWritePost", {
+              pattern = { "*.js", "*.ts" },
+              callback = function(ctx)
+                -- Here use ctx.match instead of ctx.file
+                client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+              end,
+            })
+          end,
+        })
+      end,
+      ["graphql"] = function()
+        -- configure graphql language server
+        lspconfig["graphql"].setup({
+          capabilities = capabilities,
+          filetypes = { "graphql", "gql", "svelte", "typescriptreact", "javascriptreact" },
+        })
+      end,
+      ["emmet_ls"] = function()
+        -- configure emmet language server
+        lspconfig["emmet_ls"].setup({
+          capabilities = capabilities,
+          filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "svelte" },
+        })
+      end,
+      ["lua_ls"] = function()
+        -- configure lua server (with special settings)
+        lspconfig["lua_ls"].setup({
+          capabilities = capabilities,
+          settings = {
+            Lua = {
+              -- make the language server recognize "vim" global
+              diagnostics = {
+                globals = { "vim" },
+              },
+              completion = {
+                callSnippet = "Replace",
+              },
+            },
+          },
+        })
+      end,
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p><em>In the code under <code class="language-plaintext highlighter-rouge">mason_lspconfig.setup_handlers</code> I setup a default for my language servers and some custom configurations for <code class="language-plaintext highlighter-rouge">svelte</code>, <code class="language-plaintext highlighter-rouge">graphql</code>, <code class="language-plaintext highlighter-rouge">emmet_ls</code>, and <code class="language-plaintext highlighter-rouge">lua_ls</code>. This can vary depending on the languages that you’re gonna be using.</em></p>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">nvim-cmp.lua</code> and make the following change to add the lsp as a completion source:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "hrsh7th/nvim-cmp",
+  event = "InsertEnter",
+  dependencies = {
+    "hrsh7th/cmp-buffer", -- source for text in buffer
+    "hrsh7th/cmp-path", -- source for file system paths
+    {
+      "L3MON4D3/LuaSnip",
+      -- follow latest release.
+      version = "v2.*", -- Replace &lt;CurrentMajor&gt; by the latest released major (first number of latest release)
+      -- install jsregexp (optional!).
+      build = "make install_jsregexp",
+    },
+    "saadparwaiz1/cmp_luasnip", -- for autocompletion
+    "rafamadriz/friendly-snippets", -- useful snippets
+    "onsails/lspkind.nvim", -- vs-code like pictograms
+  },
+  config = function()
+    local cmp = require("cmp")
+
+    local luasnip = require("luasnip")
+
+    local lspkind = require("lspkind")
+
+    -- loads vscode style snippets from installed plugins (e.g. friendly-snippets)
+    require("luasnip.loaders.from_vscode").lazy_load()
+
+    cmp.setup({
+      completion = {
+        completeopt = "menu,menuone,preview,noselect",
+      },
+      snippet = { -- configure how nvim-cmp interacts with snippet engine
+        expand = function(args)
+          luasnip.lsp_expand(args.body)
+        end,
+      },
+      mapping = cmp.mapping.preset.insert({
+        ["&lt;C-k&gt;"] = cmp.mapping.select_prev_item(), -- previous suggestion
+        ["&lt;C-j&gt;"] = cmp.mapping.select_next_item(), -- next suggestion
+        ["&lt;C-b&gt;"] = cmp.mapping.scroll_docs(-4),
+        ["&lt;C-f&gt;"] = cmp.mapping.scroll_docs(4),
+        ["&lt;C-Space&gt;"] = cmp.mapping.complete(), -- show completion suggestions
+        ["&lt;C-e&gt;"] = cmp.mapping.abort(), -- close completion window
+        ["&lt;CR&gt;"] = cmp.mapping.confirm({ select = false }),
+      }),
+      -- sources for autocompletion
+      sources = cmp.config.sources({
+        { name = "nvim_lsp"},
+        { name = "luasnip" }, -- snippets
+        { name = "buffer" }, -- text within current buffer
+        { name = "path" }, -- file system paths
+      }),
+
+      -- configure lspkind for vs-code like pictograms in completion menu
+      formatting = {
+        format = lspkind.cmp_format({
+          maxwidth = 50,
+          ellipsis_char = "...",
+        }),
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-troublenvim">Setup trouble.nvim</h2>
+
+<p>This is another plugin that adds some nice functionality for interacting with the lsp and some other things like todo comments.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">trouble.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "folke/trouble.nvim",
+  dependencies = { "nvim-tree/nvim-web-devicons", "folke/todo-comments.nvim" },
+  opts = {
+    focus = true,
+  },
+  cmd = "Trouble",
+  keys = {
+    { "&lt;leader&gt;xw", "&lt;cmd&gt;Trouble diagnostics toggle&lt;CR&gt;", desc = "Open trouble workspace diagnostics" },
+    { "&lt;leader&gt;xd", "&lt;cmd&gt;Trouble diagnostics toggle filter.buf=0&lt;CR&gt;", desc = "Open trouble document diagnostics" },
+    { "&lt;leader&gt;xq", "&lt;cmd&gt;Trouble quickfix toggle&lt;CR&gt;", desc = "Open trouble quickfix list" },
+    { "&lt;leader&gt;xl", "&lt;cmd&gt;Trouble loclist toggle&lt;CR&gt;", desc = "Open trouble location list" },
+    { "&lt;leader&gt;xt", "&lt;cmd&gt;Trouble todo toggle&lt;CR&gt;", desc = "Open todos in trouble" },
+  },
+}
+</code></pre></div></div>
+
+<p><strong>The code above has been refactored to work with trouble version 3. This is different from the code in the video</strong></p>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-formatting">Setup formatting</h2>
+
+<p>We’re gonna use <code class="language-plaintext highlighter-rouge">conform.nvim</code> to setup formatting in Neovim.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">formatting.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "stevearc/conform.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  config = function()
+    local conform = require("conform")
+
+    conform.setup({
+      formatters_by_ft = {
+        javascript = { "prettier" },
+        typescript = { "prettier" },
+        javascriptreact = { "prettier" },
+        typescriptreact = { "prettier" },
+        svelte = { "prettier" },
+        css = { "prettier" },
+        html = { "prettier" },
+        json = { "prettier" },
+        yaml = { "prettier" },
+        markdown = { "prettier" },
+        graphql = { "prettier" },
+        liquid = { "prettier" },
+        lua = { "stylua" },
+        python = { "isort", "black" },
+      },
+      format_on_save = {
+        lsp_fallback = true,
+        async = false,
+        timeout_ms = 1000,
+      },
+    })
+
+    vim.keymap.set({ "n", "v" }, "&lt;leader&gt;mp", function()
+      conform.format({
+        lsp_fallback = true,
+        async = false,
+        timeout_ms = 1000,
+      })
+    end, { desc = "Format file or range (in visual mode)" })
+  end,
+}
+</code></pre></div></div>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">mason.lua</code> and add the following to auto install formatters:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "williamboman/mason.nvim",
+  dependencies = {
+    "williamboman/mason-lspconfig.nvim",
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+  },
+  config = function()
+    -- import mason
+    local mason = require("mason")
+
+    -- import mason-lspconfig
+    local mason_lspconfig = require("mason-lspconfig")
+
+    local mason_tool_installer = require("mason-tool-installer")
+
+    -- enable mason and configure icons
+    mason.setup({
+      ui = {
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗",
+        },
+      },
+    })
+
+    mason_lspconfig.setup({
+      -- list of servers for mason to install
+      ensure_installed = {
+        "tsserver",
+        "html",
+        "cssls",
+        "tailwindcss",
+        "svelte",
+        "lua_ls",
+        "graphql",
+        "emmet_ls",
+        "prismals",
+        "pyright",
+      },
+    })
+
+    mason_tool_installer.setup({
+      ensure_installed = {
+        "prettier", -- prettier formatter
+        "stylua", -- lua formatter
+        "isort", -- python formatter
+        "black", -- python formatter
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-linting">Setup linting</h2>
+
+<p>We’re gonna be using nvim-lint to setup linting in Neovim.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">linting.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "mfussenegger/nvim-lint",
+  event = { "BufReadPre", "BufNewFile" },
+  config = function()
+    local lint = require("lint")
+
+    lint.linters_by_ft = {
+      javascript = { "eslint_d" },
+      typescript = { "eslint_d" },
+      javascriptreact = { "eslint_d" },
+      typescriptreact = { "eslint_d" },
+      svelte = { "eslint_d" },
+      python = { "pylint" },
+    }
+
+    local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+
+    vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+      group = lint_augroup,
+      callback = function()
+        lint.try_lint()
+      end,
+    })
+
+    vim.keymap.set("n", "&lt;leader&gt;l", function()
+      lint.try_lint()
+    end, { desc = "Trigger linting for current file" })
+  end,
+}
+</code></pre></div></div>
+
+<p>Navigate to <code class="language-plaintext highlighter-rouge">mason.lua</code> and add the following to auto install linters:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "williamboman/mason.nvim",
+  dependencies = {
+    "williamboman/mason-lspconfig.nvim",
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+  },
+  config = function()
+    -- import mason
+    local mason = require("mason")
+
+    -- import mason-lspconfig
+    local mason_lspconfig = require("mason-lspconfig")
+
+    local mason_tool_installer = require("mason-tool-installer")
+
+    -- enable mason and configure icons
+    mason.setup({
+      ui = {
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗",
+        },
+      },
+    })
+
+    mason_lspconfig.setup({
+      -- list of servers for mason to install
+      ensure_installed = {
+        "tsserver",
+        "html",
+        "cssls",
+        "tailwindcss",
+        "svelte",
+        "lua_ls",
+        "graphql",
+        "emmet_ls",
+        "prismals",
+        "pyright",
+      },
+    })
+
+    mason_tool_installer.setup({
+      ensure_installed = {
+        "prettier", -- prettier formatter
+        "stylua", -- lua formatter
+        "isort", -- python formatter
+        "black", -- python formatter
+        "pylint", -- python linter
+        "eslint_d", -- js linter
+      },
+    })
+  end,
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="setup-git-functionality">Setup git functionality</h2>
+
+<h3 id="setup-gitsigns-plugin">Setup gitsigns plugin</h3>
+
+<p>Gitsigns is a great plugin for interacting with git hunks in Neovim.</p>
+
+<p>Open the file explorer with <code class="language-plaintext highlighter-rouge">&lt;leader&gt;ee</code> (in my config the <code class="language-plaintext highlighter-rouge">&lt;leader&gt;</code> key is <code class="language-plaintext highlighter-rouge">space</code>).</p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">gitsigns.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "lewis6991/gitsigns.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  opts = {
+    on_attach = function(bufnr)
+      local gs = package.loaded.gitsigns
+
+      local function map(mode, l, r, desc)
+        vim.keymap.set(mode, l, r, { buffer = bufnr, desc = desc })
+      end
+
+      -- Navigation
+      map("n", "]h", gs.next_hunk, "Next Hunk")
+      map("n", "[h", gs.prev_hunk, "Prev Hunk")
+
+      -- Actions
+      map("n", "&lt;leader&gt;hs", gs.stage_hunk, "Stage hunk")
+      map("n", "&lt;leader&gt;hr", gs.reset_hunk, "Reset hunk")
+      map("v", "&lt;leader&gt;hs", function()
+        gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+      end, "Stage hunk")
+      map("v", "&lt;leader&gt;hr", function()
+        gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+      end, "Reset hunk")
+
+      map("n", "&lt;leader&gt;hS", gs.stage_buffer, "Stage buffer")
+      map("n", "&lt;leader&gt;hR", gs.reset_buffer, "Reset buffer")
+
+      map("n", "&lt;leader&gt;hu", gs.undo_stage_hunk, "Undo stage hunk")
+
+      map("n", "&lt;leader&gt;hp", gs.preview_hunk, "Preview hunk")
+
+      map("n", "&lt;leader&gt;hb", function()
+        gs.blame_line({ full = true })
+      end, "Blame line")
+      map("n", "&lt;leader&gt;hB", gs.toggle_current_line_blame, "Toggle line blame")
+
+      map("n", "&lt;leader&gt;hd", gs.diffthis, "Diff this")
+      map("n", "&lt;leader&gt;hD", function()
+        gs.diffthis("~")
+      end, "Diff this ~")
+
+      -- Text object
+      map({ "o", "x" }, "ih", ":&lt;C-U&gt;Gitsigns select_hunk&lt;CR&gt;", "Gitsigns select hunk")
+    end,
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code></p>
+
+<h3 id="setup-lazygit-integration">Setup lazygit integration</h3>
+
+<p>Make sure you have lazygit installed.</p>
+
+<p>Install with homebrew:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew install jesseduffield/lazygit/lazygit
+</code></pre></div></div>
+
+<p>Open Neovim with <code class="language-plaintext highlighter-rouge">nvim .</code></p>
+
+<p>Under <code class="language-plaintext highlighter-rouge">plugins</code> add a new file with <code class="language-plaintext highlighter-rouge">a</code> and call it <code class="language-plaintext highlighter-rouge">lazygit.lua</code></p>
+
+<p>Add the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return {
+  "kdheepak/lazygit.nvim",
+  cmd = {
+    "LazyGit",
+    "LazyGitConfig",
+    "LazyGitCurrentFile",
+    "LazyGitFilter",
+    "LazyGitFilterCurrentFile",
+  },
+  -- optional for floating window border decoration
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+  },
+  -- setting the keybinding for LazyGit with 'keys' is recommended in
+  -- order to load the plugin when the command is run for the first time
+  keys = {
+    { "&lt;leader&gt;lg", "&lt;cmd&gt;LazyGit&lt;cr&gt;", desc = "Open lazy git" },
+  },
+}
+</code></pre></div></div>
+
+<p>Exit with <code class="language-plaintext highlighter-rouge">:q</code> and reenter Neovim with <code class="language-plaintext highlighter-rouge">nvim</code></p>
+
+<h2 id="youre-done-">YOU’RE DONE! 🚀</h2>
+
+</main>
+
+<footer class="footer">
+  <data class="u-url" value="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+      </div>
+      <div class="footer-col">
+        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li>
+    <a rel="me" href="https://github.com/jekyll/minima" target="_blank" title="Minima Theme repository at GitHub">
+      <span class="grey fa-brands fa-github fa-lg"></span>
+    </a>
+  </li><li>
+    <a rel="me" href="https://x.com/jekyllrb" target="_blank" title="Jekyll at X (formerly Twitter)">
+      <span class="grey fa-brands fa-x-twitter fa-lg"></span>
+    </a>
+  </li>
+  <li>
+    <a href="http://localhost:4000/feed.xml" target="_blank" title="Subscribe to syndication feed">
+      <svg class="svg-icon grey" width="16" height="16" viewbox="0 0 16 16">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194
+          11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0
+          13.806c0-1.21.983-2.195 2.194-2.195zM10.606
+          16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"
+        />
+      </svg>
+    </a>
+  </li>
+</ul>
+</div>
+
+  </div>
+
+</footer>
+
+ 
+
+  </body>
+</html>

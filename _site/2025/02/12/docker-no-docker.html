@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  
+
+  
+
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+
+  <!-- <meta property="og:title" content="" /> -->
+  <!-- <meta property="og:description" content="" /> -->
+  <!-- <meta property="og:url" content="" /> -->
+  <!-- <meta property="og:image" content="" /> -->
+
+  <title>Мой первый контейнер без Docker - yaba</title>
+
+  <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+
+  <link href="/assets/css/main.css" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css"> -->
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script> -->
+  <!-- <script>hljs.initHighlightingOnLoad();</script> -->
+
+</head>
+<body>
+
+    <h1 class="site-name">
+  <a class="navbar-brand" href="http://localhost:4000">yaba</a>
+</h1>
+<nav class="site-navigation"><a href="/2025/12/03/build-micro-linux.html">Собираем Linux, который весит меньше, чем мем с котиком, ну или почти…</a><a href="/2025/05/13/how-to-setup-neovim-2024.html">How I Setup Neovim On My Mac To Make it AMAZING in 2024</a><a href="/2025/02/12/docker-no-docker.html">Мой первый контейнер без Docker</a><a href="/2024/12/27/anti-dpi.html">Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1</a><a href="/2024/05/07/viborg.html">Выборг</a><a href="/2023/09/01/velikiy-novgorod.html">Великий Новгород</a><a href="/2023/06/14/dom-sovi.html">Дом Cовы на р.Тихой</a><a href="/2023/05/12/markdown-cheat-sheet.html">Markdown: Syntax</a></nav>
+
+<main class="content">
+  <h1 class="page-title">
+    Мой первый контейнер без Docker
+  </h1>
+
+  <p><a href="https://habr.com/ru/articles/881428/">https://habr.com/ru/articles/881428/</a></p>
+
+<p>Технологии контейнеризации, возможно, как и у большинства читателей данной статьи, плотно засели в моей голове. И казалось бы, просто пиши Dockerfile и не выпендривайся. Но всегда же хочется узнавать что-то новое и углубляться в уже освоенные темы. По этой причине я решил разобратьсяв реализации контейнеров в ОС на базе ядра linux и в последствие создать свой «контейнер» через cmd.</p>
+
+<h2 id="на-ком-держатся-контейнеры-в-linux">На ком держатся контейнеры в Linux?</h2>
+
+<p>Для начала необходимо понять на чем именно основана технология контейнеризации. В ядре Linux существуют два механизма: namespace (пространство имен), cgroups (control groups). Они обеспечивают изоляцию и масштабируемость, за которые мы все так любим контейнеры. Давайте разберем по порядку оба механизма.</p>
+
+<h3 id="namespace">Namespace</h3>
+
+<p>Пространства имен позволяют нам изолировать ресурсы системы между процессами. С их помощью мы можем создать отдельную виртуальную систему, при этом формально находясь в хостовой. Возможно, данное краткое пояснение не особо просветило Вас, поэтому давайте взглянем на пример:</p>
+
+<p>Рассмотрим контейнер поднятый из образа alpine. Запустим его и интерактивную оболочку в нем:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -it alpine /bin/sh
+</code></pre></div></div>
+
+<p>Теперь создадим новый процесс в контейнере, и проверим вывод команды ps:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sleep 1000 &amp;
+ps -a
+</code></pre></div></div>
+
+<p>Получаем:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PID   USER     TIME  COMMAND
+    1 root      0:00 /bin/sh
+   29 root      0:00 sleep 1000
+   30 root      0:00 ps -a
+</code></pre></div></div>
+
+<p>Обратите внимание, что PID процесса равен 29. Теперь попробуем найти этот же процесс, но на хостовой машине. Для этого определим ID контейнера и воспользуемся командой для отображения процессов, запущенных внутри docker:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker top &lt;ID контейнера&gt;
+</code></pre></div></div>
+
+<p>В результате получаем:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UID     PID       PPID      C    STIME    TTY      TIME        CMD
+root    172147    172124    0    Feb05    pts/0    00:00:00    /bin/sh
+root    173602    172147    0    Feb05    pts/0    00:00:00    sleep 1000
+</code></pre></div></div>
+
+<p>Обратим внимание на 2 столбца: PID и PPID(parent PID). Они указывают на PID самого процесса и родительского, но уже в хостовой системе. Давайте проверим это:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ps aux | grep -E '173602|172147'
+</code></pre></div></div>
+
+<p>Получаем:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root      172147  0.0  0.0   1736   908 pts/0    Ss+  Feb05   0:00 /bin/sh
+root      173602  0.0  0.0   1624   980 pts/0    S    Feb05   0:00 sleep 1000
+</code></pre></div></div>
+
+<p>Что и требовалось доказать! Если подытожить, то можно сделать вывод, что контейнер ничего не знает про хостовую машину. Он считает, что является самостоятельной системой. Однако, в действительности все процессы запущены на хосте, просто они находятся в пространстве имен данного контейнера. Это и создает иллюзию отдельной независимой системы.</p>
+
+<p>Надеюсь, данный пример чуть прояснил ситуацию с namespace. В нем мы разобрали один из 8 видов пространств имен. Теперь хотелось бы кратко пройтись по каждому:</p>
+
+<ol>
+  <li>Mount - изоляция точек монтирования файловой системы. Позволяет установить свою иерархию фс;</li>
+  <li>UTS - изоляция имени хоста. Позволяет для каждого контейнера указать свое хостовое имя;</li>
+  <li>PID - изоляция идентификаторов процессов. Позволяет создавать отдельное дерево процессов;</li>
+  <li>Network - изоляция сетевых интерфейсов, таблиц маршрутизации;</li>
+  <li>IPC - изоляция IPC(межпроцессные взаимодействия);</li>
+  <li>User - изоляция пользователей системы. Позволяет создавать отдельных пользователей для каждого контейнера, в том числе и root;</li>
+  <li>Cgroup - изоляция доступа к cgroup. Позволяет ограничивать ресурсы контейнера и предотвращает вмешательства других контейнеров;</li>
+  <li>Time - изоляция системного времени.</li>
+</ol>
+
+<p>Для создания нового namespace в Linux существует команда unshare. С ней мы чуть позже познакомимся ближе.</p>
+
+<h3 id="cgroups">Cgroups</h3>
+
+<p>Control groups - механизм ядра Linux, позволяющий управлять ресурсами процессов. С его помощью можно ограничить и изолировать использование CPU, памяти, сети, диска.</p>
+
+<p>Существует две версии cgoups: v1 и v2. В большинстве современных систем вы встретите вторую версию, которая используется в работе systemd. Основное отличие версий в построении дерева ограничений. В первой версии создавались узлы для каждого вида ограничений, а в них уже добавлялись группы. Во второй версии для каждой группы свой узел, внутри которого все необходимые ограничения. Чтобы лучше понять, давайте взглянем на визуализацию деревьев v1 и v2:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#v1
+/sys/fs/cgroup/
+├── cpu
+│   ├── group1/
+│   │   ├── tasks
+│   │   ├── cgroup.procs
+│   │   ├── cpu.shares
+│   │   └── ...
+│   ├── group2/
+│   │   ├── tasks
+│   │   ├── cgroup.procs
+│   │   ├── cpu.shares
+│   │   └── ...
+│   └── ...
+├── memory
+│   ├── group1/
+│   │   ├── tasks
+│   │   ├── cgroup.procs
+│   │   ├── memory.limit_in_bytes
+│   │   └── ...
+│   ├── group2/
+│   │   ├── tasks
+│   │   ├── cgroup.procs
+│   │   ├── memory.limit_in_bytes
+│   │   └── ...
+│   └── ...
+└── ...
+
+#v2
+/sys/fs/cgroup/
+├── group1/
+│   ├── cgroup.procs
+│   ├── cpu.max
+│   ├── cpu.weight
+│   ├── memory.current
+│   ├── memory.max
+│   └── ...
+├── group2/
+│   ├── cgroup.procs
+│   ├── cpu.max
+│   ├── cpu.weight
+│   ├── memory.current
+│   ├── memory.max
+│   └── ...
+└── ...
+</code></pre></div></div>
+
+<p>Теперь давайте взглянем на работу cgroup на примере контейнера docker. Для начала запустим контейнер, ограничив его ресурсы(2 ядра и 512МБ):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d --cpus="2" --memory="512m" nginx
+</code></pre></div></div>
+
+<p>Далее найдем группу для этого контейнера, воспользовавшись командой find :</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find /sys/fs/cgroup -name '*&lt;ID контейнера&gt;*'
+</code></pre></div></div>
+
+<p>Далее проверим содержание файлов cpu.max и memory.max в найденной директории:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cpu.max
+200000 100000
+
+# memory.max
+536870912
+</code></pre></div></div>
+
+<p>Что и требовалось доказать!</p>
+
+<h2 id="создание-контейнера-без-docker">Создание контейнера без docker</h2>
+
+<p>Мы разобрались с основной необходимой нам теорией. Теперь перейдем к практике и прибегнем к волшебству командной строки.</p>
+
+<p>Для начала создадим структуру файловой системы контейнера, установим busybox в директорию /bin :</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Создаем корневую дирекотрию контейнера и переходим в нее
+mkdir ~/container &amp;&amp; cd ~/container
+# Создаем основные системные директории и переходим в /bin
+mkdir -p ./{proc,sys,dev,tmp,bin,root,etc} &amp;&amp; cd bin
+# Устанавливаем busybox
+wget https://www.busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox
+# Выдаем право на исполнение
+chmod +x busybox
+# Создаем симлинки для всех команд, которые есть в busybox
+./busybox --list | xargs -I {} ln -s busybox {}
+# Возвращаемся в корневую директорию контейнера
+cd ~/container
+# Добавляем переменную PATH в файл /etc/profile
+echo 'export PATH=/bin' &gt; ~/container/etc/profile
+</code></pre></div></div>
+
+<p>Также добавим в файлы /etc/passwd и /etc/group, чтобы внутри изолированной системы мы были рутом:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo "root:x:0:0:root:/root:/bin/sh" &gt; ~/container/etc/passwd
+echo "root:x:0:" &gt; ~/container/etc/group
+</code></pre></div></div>
+
+<p>Далее смонтируем системные директории:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Монтируем устройства, используя уже существующие
+sudo mount --bind /dev ~/container/dev
+# Монтируем процессы
+sudo mount -t proc none ~/container/proc
+# Монтируем файловую систему sysfs
+sudo mount -t sysfs none ~/container/sys
+# Монтируем файловую систему tmpfs
+sudo mount -t tmpfs none ~/container/tmp
+</code></pre></div></div>
+
+<p>Примечание: для того чтобы потом размонтировать можно воспользоваться командой:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo umount ~/container/{proc,sys,dev,tmp}
+</code></pre></div></div>
+
+<p>Мы подготовили файловую систему для нашего контейнера. Теперь перейдем к созданию изоляции. Для этого мы воспользуемся командой:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>unshare -f -p -m -n -i -u -U --map-root-user --mount-proc=./proc \
+    /bin/chroot ~/container /bin/sh -c "source /etc/profile &amp;&amp; exec /bin/sh"
+</code></pre></div></div>
+
+<p>Давайте разберем ее подробнее:</p>
+
+<ul>
+  <li>-f - fork. Создаем новый процесс для изоляции от родительского;</li>
+  <li>-p - PID namespace;</li>
+  <li>-m - mount namespace;</li>
+  <li>-n - Network namespace;</li>
+  <li>-i - IPC namespace;</li>
+  <li>-u - UTS namespace;</li>
+  <li>-U - User namespace;</li>
+  <li>–map-root-user - маппинг uid и gid активного пользователя на root внутри контейнера;</li>
+  <li>-mount-proc - монтируем proc внутри контейнера;</li>
+  <li>/bin/chroot ~/container - меняем корневую директорию;</li>
+  <li>/bin/sh -c “source /etc/profile &amp;&amp; exec /bin/sh” - запускаем shell и исполняем команду, которая применит файл /etc/profile и запустит интерактивный shell.</li>
+</ul>
+
+<p>Отлично! Мы получили свой контейнер. Теперь осталось ограничить ресурсы. Для этого откроем новую сессию на хосте и выполним ряд действий:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Создаем новую группу. В моей системе используется cgroups v2, поэтому
+# директория автоматически будет настроена для работы с ресурсами
+sudo mkdir /sys/fs/cgroup/my_container
+# Записываем ограничение на 2 ядра процессора
+echo "200000 100000" | sudo tee /sys/fs/cgroup/my_container/cpu.max
+# Выделяем максимум 512MB памяти
+echo 536870912 | sudo tee /sys/fs/cgroup/my_container/memory.max
+</code></pre></div></div>
+
+<p>Далее необходимо определить PID контейнера, для этого воспользуемся командой:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ps aux | grep -E '/bin/sh$'
+</code></pre></div></div>
+
+<p>Берем PID из второго столбца и добавляем в файл cgroup.procs :</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo &lt;PID&gt; | sudo tee /sys/fs/cgroup/my_container/cgroup.procs
+</code></pre></div></div>
+
+<p>На этом основные настройки закончены. Мы создали изолированную систему и добавили ограничение ресурсов. Но хотелось бы сделать ее чуть более функциональной, для этого настроим виртуальную сеть между хостом и контейнером:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Создаем пару виртуальных интерфейсов
+sudo ip link add veth-host type veth peer name veth-container
+# Поднимаем интерфейс на хосте
+sudo ip link set veth-host up
+# Назанчаем любой свободный адрес в вашей сети на интерфейс хоста
+# Я использую 192.168.1.123/24
+sudo ip addr add 192.168.1.123/24 dev veth-host
+# Перемещаем veth-container в пространство имен контейнера
+# Здесь нужно указать PID контейнера, который использовали до этого
+sudo ip link set veth-container netns &lt;PID&gt;
+# Поднимаем интерфейс внутри контейнер
+sudo nsenter --net=/proc/&lt;PID&gt;/ns/net ip link set veth-container up
+# Назанчаем любой свободный адрес в вашей сети на интерфейс контейнера
+# Я использую 192.168.1.124/24
+sudo nsenter --net=/proc/&lt;PID&gt;/ns/net ip addr add 192.168.1.124/24 dev veth-container
+# Настраиваем шлюз по умолчанию для маршрутизации трафика
+sudo nsenter --net=/proc/&lt;PID&gt;/ns/net ip route add default via 192.168.1.123
+</code></pre></div></div>
+
+<p>Мы подняли все нужные интерфейсы. Теперь необходимо настроить маршрутизацию:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Разрешаем пересылку пакетов
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+# Добавляем правило NAT для маскардинга для исходящих пакетов из сети
+# 192.168.1.0/24 через интерфейс который смотрит во внешнюю сеть. У меня это enp3s0.
+# Маскардинг маскирует пакеты исходящие их контейнера так, чтобы они выглядели,
+# как пакеты отправленные с хоста
+sudo iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o enp3s0 -j MASQUERADE
+# Добавляем парвило на разрешение форвардинга пакетов
+sudo iptables -A FORWARD -s 192.168.1.0/24 -o enp3s0 -j ACCEPT
+# Добавляем парвило, разрешающее входящие пакеты.
+sudo iptables -A FORWARD -d 192.168.1.0/24 -m state --state RELATED,ESTABLISHED -j ACCEPT
+</code></pre></div></div>
+
+<p>Отлично! Мы создали свой первый контейнер. Понятно, что в нем еще много чего можно настроить, тот же DNS, который сейчас не работает. Но это уже каждый сам решит, как с этим играть.</p>
+
+<p>Спасибо за прочтение!</p>
+
+</main>
+
+<footer class="footer">
+  <data class="u-url" value="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+      </div>
+      <div class="footer-col">
+        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li>
+    <a rel="me" href="https://github.com/jekyll/minima" target="_blank" title="Minima Theme repository at GitHub">
+      <span class="grey fa-brands fa-github fa-lg"></span>
+    </a>
+  </li><li>
+    <a rel="me" href="https://x.com/jekyllrb" target="_blank" title="Jekyll at X (formerly Twitter)">
+      <span class="grey fa-brands fa-x-twitter fa-lg"></span>
+    </a>
+  </li>
+  <li>
+    <a href="http://localhost:4000/feed.xml" target="_blank" title="Subscribe to syndication feed">
+      <svg class="svg-icon grey" width="16" height="16" viewbox="0 0 16 16">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194
+          11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0
+          13.806c0-1.21.983-2.195 2.194-2.195zM10.606
+          16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"
+        />
+      </svg>
+    </a>
+  </li>
+</ul>
+</div>
+
+  </div>
+
+</footer>
+
+ 
+
+  </body>
+</html>

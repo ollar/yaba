@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  
+
+  
+
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+
+  <!-- <meta property="og:title" content="" /> -->
+  <!-- <meta property="og:description" content="" /> -->
+  <!-- <meta property="og:url" content="" /> -->
+  <!-- <meta property="og:image" content="" /> -->
+
+  <title>Собираем Linux, который весит меньше, чем мем с котиком, ну или почти… - yaba</title>
+
+  <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+
+  <link href="/assets/css/main.css" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css"> -->
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script> -->
+  <!-- <script>hljs.initHighlightingOnLoad();</script> -->
+
+</head>
+<body>
+
+    <h1 class="site-name">
+  <a class="navbar-brand" href="http://localhost:4000">yaba</a>
+</h1>
+<nav class="site-navigation"><a href="/2025/12/03/build-micro-linux.html">Собираем Linux, который весит меньше, чем мем с котиком, ну или почти…</a><a href="/2025/05/13/how-to-setup-neovim-2024.html">How I Setup Neovim On My Mac To Make it AMAZING in 2024</a><a href="/2025/02/12/docker-no-docker.html">Мой первый контейнер без Docker</a><a href="/2024/12/27/anti-dpi.html">Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1</a><a href="/2024/05/07/viborg.html">Выборг</a><a href="/2023/09/01/velikiy-novgorod.html">Великий Новгород</a><a href="/2023/06/14/dom-sovi.html">Дом Cовы на р.Тихой</a><a href="/2023/05/12/markdown-cheat-sheet.html">Markdown: Syntax</a></nav>
+
+<main class="content">
+  <h1 class="page-title">
+    Собираем Linux, который весит меньше, чем мем с котиком, ну или почти…
+  </h1>
+
+  <p>Мне всегда было интересно, насколько минимальным может быть Linux.</p>
+
+<p>Три года назад я уже публиковал <a href="https://habr.com/ru/companies/ruvds/articles/702570/">статью</a>, но понимание темы меняется. Сейчас хочу освежить знания и поделиться ими.</p>
+
+<p>В отличие от предыдущей статьи, в этой я рассматриваю Linux с более свежим ядром с минимальной конфигурацией на основе tinyconfig, оформленный в виде одного файла и загружаемый при помощи UEFI.</p>
+
+<p>Зачем вообще нужно создавать такие сборки Linux?</p>
+
+<p>Установил готовый дистрибутив или загрузился в Live — работай и изучай. Но такой подход не даёт настоящей уверенности в знаниях. Представьте: водитель и шофёр. Водитель просто ездит. Шофёр знает устройство автомобиля и может его починить.</p>
+
+<p>Современные автомобили сложны — починить всё самому уже нельзя. Но вы можете открыть капот, измерить уровень масла, заменить колесо в случае прокола, установить винт для буксировочного троса и т. д. Так же и с Linux: коммерческий дистрибутив вы вряд ли соберёте, но на одну ступеньку вверх по лестнице профессионализма подниметесь.</p>
+
+<p>На мой взгляд, описание создания минимального Linux не должно быть большим, поэтому я старался его сделать минимально возможным, вложив максимум смысла.</p>
+
+<p>Как минимальный Linux служит для понимания более сложных вещей, так и моя статья даёт базу для дальнейшего более глубокого изучения.</p>
+
+<p>В комментариях к моей предыдущей статье я видел замечания, что можно использовать <a href="https://buildroot.org/">buildroot</a> или книгу <a href="https://www.linuxfromscratch.org/">Linux From Scratch</a>. Скажу только, что я преследую другие цели: собрать минимальный Linux без использования специализированных программ и сделать это как можно проще.</p>
+
+<p>Всем, кого заинтересовало, добро пожаловать под кат.</p>
+
+<p>Действия, описанные в статье, также приведены в виде небольшого bash-скрипта в <a href="https://github.com/artyomsoft/minimal-uefi-linux">моём репозитории на GitHub</a>.</p>
+
+<h3 id="архитектура">Архитектура</h3>
+
+<p>Начнём с того, что необходимо для минимального Linux.</p>
+
+<p>Сначала нам нужно определиться с <em>платформой</em>, на которой нужно запустить Linux. <em>Платформа</em> — это набор программно-аппаратных средств, на которых запускается Linux. Программный код ядра Linux общий для всех платформ, но часть кода является платформенно-зависимым.</p>
+
+<p>Нам нужно:</p>
+
+<ul>
+  <li>
+    <p><em>ядро</em>, которое содержит только самое необходимое;</p>
+  </li>
+  <li>
+    <p><em>корневая файловая система</em>;</p>
+  </li>
+  <li>
+    <p>минимальный набор пользовательских программ и библиотек в корневой файловой системе;</p>
+  </li>
+  <li>
+    <p>нечто, что может запустить само ядро на платформе (загрузчик).</p>
+  </li>
+</ul>
+
+<h4 id="платформа">Платформа</h4>
+
+<p>Существует множество платформ, на которых можно запустить Linux. Мы выбираем ту, которая сейчас есть практически у всех — <em>UEFI x86_64</em>. Это ноутбук или стационарный компьютер, где в качестве Firmware установлен UEFI. Скорее это не платформа, а семейство платформ, так как компьютеры и ноутбуки отличаются аппаратной начинкой. В нашем случае это не имеет значения, так как мы будем использовать минимальные возможности. Для тестирования Linux удобно использовать <em>QEMU</em>. <em>QEMU</em> — это система виртуализации, поддерживающая эмуляцию множества платформ, которая и сама может также рассматриваться как платформа.</p>
+
+<h4 id="ядро">Ядро</h4>
+
+<p><em>Ядро</em> — это файл в простейшем случае или набор файлов в более сложных случаях. Мы создаём минимальный Linux, поэтому я рассматриваю только первый случай. Как я говорил ранее, бо́льшая часть исходного кода ядра Linux одинаковая для всех платформ, но бинарный код ядра будет отличаться из-за <em>архитектуры системы команд</em> (ISA) выбранной платформы, аппаратных средств выбранной платформы и специфики загрузки ядра на выбранной платформе.</p>
+
+<h4 id="корневая-файловая-система">Корневая файловая система</h4>
+
+<p><em>Корневая файловая система</em> — это структура данных, где находится набор пользовательских программ, файлы устройств, другие служебные файловые системы, используемые ядром. Корневая файловая система служит связующим звеном между пространством ядра и пространством пользователя.</p>
+
+<h4 id="набор-пользовательских-программ-и-библиотек">Набор пользовательских программ и библиотек</h4>
+
+<p>Другим звеном являются <em>системные вызовы</em> — особые функции, исполняемые в <em>пространстве ядра</em>, которые можно вызывать из <em>пространства пользователя</em>.</p>
+
+<p>Обычно программисты вызывают не их, а обёртки для них, которые находятся в <em>стандартной библиотеке (libc)</em>. В настоящее время наибольшее распространение получили две: <em>glibc</em> и <em>musl</em>. Первая, как правило, используется для десктопных и серверных систем, вторая — для встраиваемых и минималистичных (например, Alpine Linux — минималистичная Linux, предназначенная для запуска в Docker-контейнерах). Кроме стандартной библиотеки, существуют и другие библиотеки, предназначенные для решения специфичных задач.</p>
+
+<p>Приложения могут:</p>
+
+<ul>
+  <li>
+    <p>включать <em>объектный код</em> используемых функций (<em>статическая линковка</em>) в себя;</p>
+  </li>
+  <li>
+    <p>хранить только ссылку на используемые библиотеки и использовать совместно с другими приложениями (<em>разделяемые библиотеки</em>, <em>динамическая линковка</em>).</p>
+  </li>
+</ul>
+
+<p>С целью упрощения мы будем использовать статическую линковку.</p>
+
+<p>Набор пользовательских приложений для Linux громаден. При общем изучении Linux используют стандартные приложения, которые являются аналогами команд из операционной системы Unix.</p>
+
+<p>Это пакеты программ: <em>coreutils</em>, <em>net-tools</em>, <em>util-linux</em>, <em>procps</em>, и др. Но для минималистичных Linux существует проект <em>BusyBox</em>, который содержит большинство аналогов программ из ранее перечисленных пакетов.</p>
+
+<p>Из- за того, что он минималистичный, некоторые команды являются упрощёнными и поддерживают не все опции. Особенностью BusyBox является то, что для всех команд используется один и тот же исполняемый файл. А его имя или имя ссылки на него определяют конкретную команду, которую мы хотим запустить.</p>
+
+<h4 id="система-инициализации">Система инициализации</h4>
+
+<p>Для понимания процесса загрузки Linux важно понимание роли <em>системы инициализации</em>. При загрузке Linux наступает момент, когда ядро готово запустить первый процесс в пользовательском пространстве.</p>
+
+<p>Имя файла, с которого запускается этот процесс, имеет имя (<em>init</em>), а процесс — особый идентификатор (<em>PID</em> равный 1). Файл init должен располагаться по определённому пути, где его сможет найти ядро.</p>
+
+<p>Теоретически <code class="language-plaintext highlighter-rouge">init</code> может делать что угодно, но основная его задача — запустить <em>фоновые процессы</em> в пространстве пользователя и проинициализировать другие компоненты Linux. Такой init-процесс называется <em>системой инициализации</em>. Для Linux разработаны несколько таких систем:</p>
+
+<ul>
+  <li>
+    <p>System V init — классическая UNIX-подобная система инициализации;</p>
+  </li>
+  <li>
+    <p>systemd — современная, широко используемая система инициализации;</p>
+  </li>
+  <li>
+    <p>OpenRC — альтернативная система инициализации, основанная на скриптах;</p>
+  </li>
+  <li>
+    <p>BusyBox init — минималистичная система инициализации для встраиваемых систем.</p>
+  </li>
+</ul>
+
+<p>Но мы создадим свою и уместим её в bash-скрипт.</p>
+
+<h4 id="корневая-файловая-система-и-initramfs">Корневая файловая система и initramfs</h4>
+
+<p>Загрузка Linux возможна как с использованием <em>промежуточной корневой файловой системы</em>, служащей для первоначальной инициализации пространства пользователя так и без неё. Промежуточная корневая файловая система называется <em>initramfs</em>. В этом случае необходимо при загрузке Linux указать как имя файла образа ядра, так и имя файла образа initramfs. Физически файл образа initramfs — это сжатый или несжатый архив формата <em>cpio</em>.</p>
+
+<p>Возможен вариант, когда образ initramfs внедряется в файл образа ядра, мы воспользуемся этой возможностью для упрощения и получения wow-эффекта.</p>
+
+<p>Программы и модули, находящиеся в initramfs, служат для того, чтобы подготовить ядро к переключению на постоянную корневую файловую систему. То есть если в файл ядра включить необходимые модули, то возможно монтирование корневой файловой системы и запуск init-процесса без использования initramfs, но в случае минимальной конфигурации Linux это усложняет подготовку загрузочного образа, так как нужно:</p>
+
+<ul>
+  <li>
+    <p>разметить диск;</p>
+  </li>
+  <li>
+    <p>записать в один из разделов образ корневой файловой системы;</p>
+  </li>
+  <li>
+    <p>добавить загрузчик операционной системы, в случае традиционной загрузки при помощи GRUB;</p>
+  </li>
+  <li>
+    <p>добавить и отформатировать <em>ESP-раздел</em> в случае непосредственной загрузки при помощи UEFI.</p>
+  </li>
+</ul>
+
+<p>Поэтому мы разместим корневую файловую систему в файле образа initramfs, а файл образа initramfs включим файл образа ядра Linux.</p>
+
+<p>Чтобы использовать fallback-загрузку UEFI и загрузить Linux с флеш-диска:</p>
+
+<ul>
+  <li>
+    <p>отформатируем флеш-диск файловой системой <em>FAT32</em>,</p>
+  </li>
+  <li>
+    <p>переименуем файл образа ядра Linux в <code class="language-plaintext highlighter-rouge">BOOTX64.EFI</code>,</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">BOOTX64.EFI</code> поместим в директорию <code class="language-plaintext highlighter-rouge">/EFI/BOOT</code>.</p>
+  </li>
+</ul>
+
+<h4 id="загрузчик">Загрузчик</h4>
+
+<p><em>Загрузчик</em> играет важную роль в процессе запуска Linux. Его можно представить как некоторую программу, которая способна запустить ядро Linux. Ядру, как и обычной программе, запущенной из командной строки, можно передавать <em>параметры командной строки</em>. Требования к тому, как загрузчик передаёт параметры и управление ядру называются <em>протокол загрузки (Boot Protocol)</em>. Протоколы загрузки отличаются для разных платформ, некоторые платформы поддерживают несколько протоколов загрузки.</p>
+
+<p>Мы будем использовать протокол загрузки EFI. Суть его заключается в следующем:</p>
+
+<p>Для загрузки используются возможности UEFI. В этом случае файл ядра является валидным UEFI-приложением. В самом файле ядра есть небольшой код, который подготавливает ядро к вызову функции <code class="language-plaintext highlighter-rouge">start_kernel</code>. Этот код называется <em>EFIStub</em>.</p>
+
+<p>UEFI поддерживает так называемые <em>Boot Entries</em> — записи в <em>NVRAM</em> о том, какие ядра доступны, на каких разделах они располагаются, какую командную строку им нужно передавать. Но эту возможность при использовании сменных носителей не используют.</p>
+
+<p>Также существует возможность поместить <em>Linux Command Line</em> в файл образа ядра. В целях упрощения мы также использовать не будем eё использовать.</p>
+
+<h4 id="командная-строка-ядра-linux">Командная строка ядра Linux</h4>
+
+<p>Хотя в полученном Linux мы не будем использовать командную строку ядра Linux, я приведу о ней краткую информацию. В командной строке передаются такие значения как:</p>
+
+<ul>
+  <li>
+    <p>кастомный путь и имя файла для процесса init;</p>
+  </li>
+  <li>
+    <p>блочное устройство (раздел на диске), которое содержит корневую файловую систему;</p>
+  </li>
+  <li>
+    <p>какое устройство будет использоваться в качестве консоли при загрузке.</p>
+  </li>
+</ul>
+
+<p>Кроме того, через командную строку передаются параметры программам, запускающиеся с initramfs. Поэтому от дистрибутива к дистрибутиву список параметров, которые можно передать в качестве параметров ядра, различается.</p>
+
+<p>Какая командная строка была передана ядру, можно посмотреть следующим образом:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cat /proc/cmdline
+</code></pre></div></div>
+
+<h3 id="сборка">Сборка</h3>
+
+<p><em>Сборка операционной системы Linux</em> подразумевает сборку ядра, сборку пользовательских программ, создание и наполнение корневой файловой системы.</p>
+
+<p>Обычно для этой цели используются специализированные средства, но так как статья сфокусирована на простоте, я рассматриваю самый простой случай, когда вы сможете собрать Linux на коленке.</p>
+
+<p>Для сборки нам понадобятся:</p>
+
+<ul>
+  <li>
+    <p>Docker;</p>
+  </li>
+  <li>
+    <p>Docker-образ Linux-дистрибутива;</p>
+  </li>
+  <li>
+    <p>пакеты, которые содержат программы, позволяющие собрать ядро и пользовательские программы;</p>
+  </li>
+  <li>
+    <p>исходники ванильного ядра Linux c сайта <em>kernel.org</em>;</p>
+  </li>
+  <li>
+    <p>исходники BusyBox;</p>
+  </li>
+  <li>
+    <p>немного терпения и умение работать с командной строкой Linux.</p>
+  </li>
+</ul>
+
+<p>Кросс-компиляцию, а также создание Linux-системы с initramfs и постоянной корневой файловой системой я рассматривать не буду.</p>
+
+<p>Порядок изложения выбран так, чтобы шаги сборки шли в нужной последовательности — это позволяет удобно выполнять команды по ходу текста. Поэтому структура немного отличается от той, что была бы при чисто теоретическом описании.</p>
+
+<h4 id="создание-окружения-для-сборки">Создание окружения для сборки</h4>
+
+<ol>
+  <li>
+    <p>Скачать и установить <a href="https://www.docker.com/">Docker</a>, если он у вас не установлен.</p>
+  </li>
+  <li>
+    <p>Запустить Docker-контейнер в окне терминала:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -it --rm -v "%cd%":/result debian:bookworm bash
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Установить пакеты:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># apt update &amp;&amp; apt install -y apt-file &amp;&amp; apt-file update
+# apt install -y build-essential wget xz-utils cpio flex bison bc \
+file tree qemu-system  ncurses-dev libelf-dev libssl-dev
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Создать директорию для сборки</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># mkdir build &amp;&amp; cd build
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="сборка-пользовательских-программ">Сборка пользовательских программ</h4>
+
+<p>В нашей системе будет только одна пользовательская программа — BusyBox. Исходный код BusyBox включает встроенный конфигуратор, по своему принципу похожий на те, что используются в ядре Linux или в Buildroot — среде, предназначенной для сборки кастомных дистрибутивов из исходного кода.</p>
+
+<ol>
+  <li>
+    <p>Скачиваем исходный код BusyBox:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># wget https://busybox.net/downloads/busybox-1.37.0.tar.bz2
+# tar xvf busybox-1.37.0.tar.bz2
+# cd busybox-1.37.0
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Создаём конфигурацию по умолчанию:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># make defconfig
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Выполняем сборку:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># make CONFIG_STATIC=y
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Убеждаемся, что BusyBox был собран со статической линковкой:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># file busybox
+busybox: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=6540c48477b6eae56a14377ae0de4d0229ea75dc, for GNU/Linux 3.2.0, stripped
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="создание-корневой-файловой-системы">Создание корневой файловой системы</h4>
+
+<p>Наша Linux-система не будет иметь полноценную корневую файловую систему. Вместо этого мы будем использовать только initramfs-образ.</p>
+
+<p>Initramfs — это архив в формате cpio, который содержит каталоги, файлы пользовательских программ, файлы устройств и конфигурационные файлы.</p>
+
+<p>Чтобы сэкономить место, его можно сжать с помощью стандартного архиватора.</p>
+
+<ol>
+  <li>
+    <p>Создаём структуру корневой файловой системы:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># mkdir -p ../rootfs/{bin,sbin,etc,proc,sys,usr/{bin,sbin},dev,run,tmp,var}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Выполняем установку BusyBox в директорию с корневой файловой системой:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># make CONFIG_STATIC=y CONFIG_PREFIX=../rootfs install
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Добавляем скрипт для системы инициализации:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt; EOF &gt; ../rootfs/init
+#!/bin/sh
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+mdev -s
+if [ -c /dev/fb0 ]; then
+  TTY=/dev/tty1
+else
+  TTY=/dev/ttyS0
+fi
+echo 0 &gt; /proc/sys/kernel/printk
+printf "\033c" &gt; \$TTY
+cat &lt;&lt; INNER &gt; \$TTY
+                           /)
+                  /\___/\ ((
+                  \ @_@'/  ))
+                  {_:Y:.}_//
+================{_}^-'{_}====================
+~                                           ~
+~    Welcome to ArtyomSoft Minimal Linux    ~
+~                                           ~
+=============================================
+
+TTY: \$(basename \$TTY)
+Time: \$(date)
+Kernel version: \$(uname -r)
+=============================================
+INNER
+
+exec setsid sh -c "exec sh &lt;'\$TTY' &gt;'\$TTY' 2&gt;'\$TTY'"
+
+EOF
+</code></pre></div>    </div>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># chmod +x ../rootfs/init
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Создаём initramfs-образ с корневой файловой системой:</p>
+  </li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cd ../rootfs
+# find . | cpio -o -H newc | gzip &gt; ../initramfs.cpio.gz
+</code></pre></div></div>
+
+<h4 id="сборка-ядра">Сборка ядра</h4>
+
+<p>При сборке ядра важно его правильно сконфигурировать. Для самого минимального ядра используется конфигурация <code class="language-plaintext highlighter-rouge">tinyconfig</code>. Если вы выберите эту конфигурацию, ядро запустится, но не увидите работу такого ядра, так как оно практически никак не взаимодействует с пользовательским пространством и устройствами. Поэтому нужно добавить некоторое количество опций.</p>
+
+<p>Несмотря на то, что определение опций — достаточно сложное занятие, я нахожу его увлекательным. Сильно упрощает работу по определению нужных опций использование <code class="language-plaintext highlighter-rouge">make menuconfig</code> или <code class="language-plaintext highlighter-rouge">make nconfig</code>. В первом приложении после запуска необходимо нажать <code class="language-plaintext highlighter-rouge">/</code>, во втором — <code class="language-plaintext highlighter-rouge">F8</code> и в появившееся окно ввести часть названия опции, которую вы хотите добавить. После ввода появится окно найденных параметров с описанием назначения, зависимостями и указанием того, где они располагаются в меню.</p>
+
+<p><img src="%D0%A1%D0%BE%D0%B1%D0%B8%D1%80%D0%B0%D0%B5%D0%BC%20Linux,%20%D0%BA%D0%BE%D1%82%D0%BE%D1%80%D1%8B%D0%B8%CC%86%20%D0%B2%D0%B5%D1%81%D0%B8%D1%82%20%D0%BC%D0%B5%D0%BD%D1%8C%D1%88%D0%B5,%20%D1%87%D0%B5%D0%BC%20%D0%BC%D0%B5%D0%BC%20%D1%81%20%D0%BA%D0%BE%D1%82%D0%B8%D0%BA%D0%BE%D0%BC,%20%D0%BD%D1%83%20%D0%B8%D0%BB%D0%B8%20%D0%BF%D0%BE%D1%87%D1%82%D0%B8%E2%80%A6%20_%20%D0%A5%D0%B0%D0%B1%D1%80_files/iu_xm_onnnhytvbo12isaftobzk.png" alt="Окно поиска опций ядра menuconfig" /></p>
+
+<p>Окно поиска опций ядра menuconfig</p>
+
+<p><img src="%D0%A1%D0%BE%D0%B1%D0%B8%D1%80%D0%B0%D0%B5%D0%BC%20Linux,%20%D0%BA%D0%BE%D1%82%D0%BE%D1%80%D1%8B%D0%B8%CC%86%20%D0%B2%D0%B5%D1%81%D0%B8%D1%82%20%D0%BC%D0%B5%D0%BD%D1%8C%D1%88%D0%B5,%20%D1%87%D0%B5%D0%BC%20%D0%BC%D0%B5%D0%BC%20%D1%81%20%D0%BA%D0%BE%D1%82%D0%B8%D0%BA%D0%BE%D0%BC,%20%D0%BD%D1%83%20%D0%B8%D0%BB%D0%B8%20%D0%BF%D0%BE%D1%87%D1%82%D0%B8%E2%80%A6%20_%20%D0%A5%D0%B0%D0%B1%D1%80_files/qv_lqjz_da1cucp1hijo4mur__u.png" alt="Окно с описанием опций ядра menuconfig" /></p>
+
+<p>Окно с описанием опций ядра menuconfig</p>
+
+<p>Опции можно выбирать непосредственно в интерфейсе приложения, а можно, используя скрипт ‘./scripts/config’. Помните, что если вы выбрали опцию, зависящую от опции, которая не включена у вас в конфигурации, то опция будет молчаливо проигнорирована при сборке.</p>
+
+<blockquote>
+  <p>Если вы добавили какую-то опцию и попытаетесь собрать ядро, часто сборщик ядра у вас запросит дополнительные опции для конфигурирования. Можно просто множество раз нажимать клавишу <code class="language-plaintext highlighter-rouge">Enter</code>, а можно просто перед запуском сборки ввести команду:</p>
+
+  <p><code class="language-plaintext highlighter-rouge">$ make olddefconfig</code></p>
+
+  <p>и недоконфигурированные опции примут значения по умолчанию.</p>
+</blockquote>
+
+<p>Ниже я привожу, какие параметры я добавил и зачем.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Параметр</th>
+      <th>Назначение</th>
+      <th>Комментарий / зачем включать</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>64BIT</strong></td>
+      <td>Поддержка 64-битной архитектуры (x86_64).</td>
+      <td>Необходимо для сборки 64-битного ядра.</td>
+    </tr>
+    <tr>
+      <td><strong>PCI</strong></td>
+      <td>Поддержка шины PCI.</td>
+      <td>Позволяет обнаруживать и использовать устройства PCI.</td>
+    </tr>
+    <tr>
+      <td><strong>PCI_HOST_GENERIC</strong></td>
+      <td>Универсальный драйвер PCI-хоста.</td>
+      <td>Минимальный вариант для QEMU и виртуальных машин.</td>
+    </tr>
+    <tr>
+      <td><strong>TTY</strong></td>
+      <td>Поддержка терминалов (tty).</td>
+      <td>Без этого не будет консоли и ввода/вывода.</td>
+    </tr>
+    <tr>
+      <td><strong>BLK_DEV_INITRD</strong></td>
+      <td>Поддержка initrd/initramfs как блочного устройства.</td>
+      <td>Требуется для загрузки с initramfs.</td>
+    </tr>
+    <tr>
+      <td><strong>SERIAL_8250</strong></td>
+      <td>Драйвер UART 8250/16550.</td>
+      <td>Нужен для вывода через COM-порт.</td>
+    </tr>
+    <tr>
+      <td><strong>SERIAL_8250_CONSOLE</strong></td>
+      <td>Использование последовательного порта как консоли.</td>
+      <td>Позволяет видеть вывод ядра через UART.</td>
+    </tr>
+    <tr>
+      <td><strong>BINFMT_ELF</strong></td>
+      <td>Поддержка ELF-бинарников.</td>
+      <td>Формат исполняемых файлов Linux.</td>
+    </tr>
+    <tr>
+      <td><strong>BINFMT_MISC</strong></td>
+      <td>Поддержка нестандартных бинарных форматов.</td>
+      <td>Например, для интерпретаторов (Python, Wine и др.).</td>
+    </tr>
+    <tr>
+      <td><strong>BINFMT_SCRIPT</strong></td>
+      <td>Запуск скриптов с <code class="language-plaintext highlighter-rouge">#!</code>.</td>
+      <td>Нужен для shell-скриптов и init.</td>
+    </tr>
+    <tr>
+      <td><strong>DEVTMPFS</strong></td>
+      <td>Автоматическое создание <code class="language-plaintext highlighter-rouge">/dev</code>.</td>
+      <td>Cлужит для размещения файлов устройств.</td>
+    </tr>
+    <tr>
+      <td><strong>DEVTMPFS_MOUNT</strong></td>
+      <td>Автоматическое монтирование <code class="language-plaintext highlighter-rouge">/dev</code>.</td>
+      <td>Упрощает запуск init.</td>
+    </tr>
+    <tr>
+      <td><strong>TMPFS</strong></td>
+      <td>Временная файловая система в RAM.</td>
+      <td>Используется для <code class="language-plaintext highlighter-rouge">/tmp</code>, <code class="language-plaintext highlighter-rouge">/run</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>PRINTK</strong></td>
+      <td>Вывод диагностических сообщений ядра.</td>
+      <td>Нужен для логов и отладки.</td>
+    </tr>
+    <tr>
+      <td><strong>EARLY_PRINTK</strong></td>
+      <td>Ранний вывод сообщений ядра.</td>
+      <td>Показывает ошибки до инициализации консоли.</td>
+    </tr>
+    <tr>
+      <td><strong>PRINTK_TIME</strong></td>
+      <td>Метки времени в <code class="language-plaintext highlighter-rouge">printk</code>.</td>
+      <td>Удобно для отладки и анализа.</td>
+    </tr>
+    <tr>
+      <td><strong>PROC_FS</strong></td>
+      <td>Поддержка <code class="language-plaintext highlighter-rouge">/proc</code>.</td>
+      <td>Требуется для многих утилит (<code class="language-plaintext highlighter-rouge">ps</code>, <code class="language-plaintext highlighter-rouge">top</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>SYSFS</strong></td>
+      <td>Поддержка <code class="language-plaintext highlighter-rouge">/sys</code>.</td>
+      <td>Используется системными инструментами.</td>
+    </tr>
+    <tr>
+      <td><strong>INITRAMFS_SOURCE</strong></td>
+      <td>Путь к initramfs (например <code class="language-plaintext highlighter-rouge">"../initramfs.cpio.gz"</code>).</td>
+      <td>Позволяет встроить initramfs в ядро.</td>
+    </tr>
+    <tr>
+      <td><strong>RD_GZIP</strong></td>
+      <td>Поддержка gzip-сжатых initrd/initramfs.</td>
+      <td>Нужна, если initramfs сжат gzip-ом.</td>
+    </tr>
+    <tr>
+      <td><strong>INITRAMFS_COMPRESSION_GZIP</strong></td>
+      <td>Сжатие встроенного initramfs при сборке.</td>
+      <td>Экономит место.</td>
+    </tr>
+    <tr>
+      <td><strong>ACPI</strong></td>
+      <td>Поддержка ACPI (управление питанием и устройствами).</td>
+      <td>Важно для ПК и ноутбуков, не нужно в простых VM.</td>
+    </tr>
+    <tr>
+      <td><strong>EFI</strong></td>
+      <td>Поддержка загрузки через UEFI.</td>
+      <td>Обязательно, если система использует UEFI.</td>
+    </tr>
+    <tr>
+      <td><strong>EFI_STUB</strong></td>
+      <td>Позволяет ядру быть EFI-приложением.</td>
+      <td>Для прямой загрузки ядра без GRUB.</td>
+    </tr>
+    <tr>
+      <td><strong>FB</strong></td>
+      <td>Поддержка framebuffer-графики.</td>
+      <td>Для вывода на экран без X11.</td>
+    </tr>
+    <tr>
+      <td><strong>FB_EFI</strong></td>
+      <td>Использование EFI framebuffer.</td>
+      <td>Для вывода на экран в UEFI.</td>
+    </tr>
+    <tr>
+      <td><strong>FRAMEBUFFER_CONSOLE</strong></td>
+      <td>Консоль на framebuffer.</td>
+      <td>Позволяет видеть текст на графическом экране.</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>
+    <p>Скачиваем исходный код ядра Linux:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cd ..
+# wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.56.tar.xz
+# tar xvf linux-6.12.56.tar.xz
+# cd linux-6.12.56
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Создаём минимально возможную конфигурацию tinyconfig:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># make tinyconfig
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Устанавливаем нужные опции для компиляции ядра:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># ./scripts/config \
+-e 64BIT \
+-e PCI \
+-e PCI_HOST_GENERIC \
+-e TTY \
+-e BLK_DEV_INITRD \
+-e SERIAL_8250 \
+-e SERIAL_8250_CONSOLE \
+-e BINFMT_ELF \
+-e BINFMT_MISC \
+-e BINFMT_SCRIPT \
+-e DEVTMPFS \
+-e DEVTMPFS_MOUNT \
+-e TMPFS \
+-e PRINTK \
+-e EARLY_PRINTK \
+-e PRINTK_TIME\
+-e PROC_FS \
+-e SYSFS \
+--set-str INITRAMFS_SOURCE "../initramfs.cpio.gz" \
+-e RD_GZIP \
+-e INITRAMFS_COMPRESSION_GZIP \
+-e ACPI \
+-e EFI \
+-e EFI_STUB \
+-e FB \
+-e FB_EFI \
+-e FRAMEBUFFER_CONSOLE
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Собираем ядро:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># make olddefconfig
+# make -j$(nproc)
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Копируем файл ядра в директорию:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># mkdir -p /result/ESP/EFI/BOOT
+# cp arch/x86/boot/bzImage /result/ESP/EFI/BOOT/BOOTX64.EFI
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Добавляем EFI Firmware для QEMU</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cp /usr/share/OVMF/OVMF_VARS.fd /result/
+# cp /usr/share/OVMF/OVMF_CODE.fd /result/
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Запускаем наш Linux в QEMU:</p>
+
+    <p>В Docker:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># qemu-system-x86_64 -m 4096m -kernel /result/ESP/EFI/BOOT/BOOTX64.EFI -append "console=ttyS0" -nographic
+</code></pre></div>    </div>
+
+    <p>В Windows, чтобы проверить, как всё будет выглядеть при запуске на реальном железе:</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>qemu-system-x86_64 -m 4096m -drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd -drive if=pflash,format=raw,readonly=on,file=./OVMF_VARS.fd -drive format=raw,file=fat:rw:./esp
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Для выхода из QEMU нажимае <code class="language-plaintext highlighter-rouge">Ctlr+A</code> <code class="language-plaintext highlighter-rouge">X</code></p>
+  </li>
+</ol>
+
+<h4 id="запуск-на-компьютере">Запуск на компьютере</h4>
+
+<p>Проверить работу собранного Linux вы можете не только в QEMU, но и на компьютере.</p>
+
+<ol>
+  <li>
+    <p>Записать файл с ядром на флеш-диск.</p>
+  </li>
+  <li>
+    <p>Инициировать перезагрузку и зайти в UEFI/BIOS Setup Utility.</p>
+  </li>
+  <li>
+    <p>Убедиться, что у вас в UEFI отключён Secure Boot.</p>
+  </li>
+  <li>
+    <p>Выбрать флеш-диск с файлом ядра в качестве загрузочного устройства.</p>
+  </li>
+  <li>
+    <p>Выполнить загрузку с флеш-диска.</p>
+  </li>
+  <li>
+    <p>Поэкспериметировать с командами Linux.</p>
+  </li>
+  <li>
+    <p>Выключить компьютер.</p>
+  </li>
+</ol>
+
+<p>Как выглядит работа с собранным Linux на реально железе, показано на видео ниже:</p>
+
+<h3 id="выводы">Выводы</h3>
+
+<p>Мы создали почти минимально возможный Linux для UEFI-систем x86_64.</p>
+
+<p>Размер можно уменьшить ещё немного, если использовать musl в BusyBox и отключить некоторые опции при сборке. Но чтобы не усложнять материал, я этого не делал. Думаю, Linux размером около 2,5 МБ, в котором можно работать, когда современные системы занимают гигабайты, сам по себе впечатляет.</p>
+
+<p>В статье я рассмотрел лишь малую часть того, что обычно присутствует в дистрибутиве, но при этом построил рабочую систему, на которой уже можно изучать базовые команды Linux. Она занимает очень мало места, быстро загружается и не требует установки.</p>
+
+<p>В системе нет:</p>
+
+<ul>
+  <li>
+    <p>поддержки дисковых файловых систем;</p>
+  </li>
+  <li>
+    <p>полноценной поддержки USB;</p>
+  </li>
+  <li>
+    <p>Ethernet;</p>
+  </li>
+  <li>
+    <p>Wi-Fi;</p>
+  </li>
+  <li>
+    <p>TCP/IP и сетевых интерфейсов;</p>
+  </li>
+  <li>
+    <p>аппаратного ускорения графики;</p>
+  </li>
+  <li>
+    <p>пользовательских программ, кроме одного статически слинкованного BusyBox;</p>
+  </li>
+  <li>
+    <p>разделяемых библиотек;</p>
+  </li>
+  <li>
+    <p>полноценной системы инициализации;</p>
+  </li>
+  <li>
+    <p>полноценной корневой файловой системы;</p>
+  </li>
+  <li>
+    <p>модулей ядра;</p>
+  </li>
+  <li>
+    <p>подсистемы логирования;</p>
+  </li>
+  <li>
+    <p>подсистемы udev;</p>
+  </li>
+  <li>
+    <p>многопользовательского режима;</p>
+  </li>
+  <li>
+    <p>графического интерфейса.</p>
+  </li>
+</ul>
+
+<p>Тем не менее статья даёт понимание базового фундамента, который делает изучение более сложных аспектов Linux значительно проще.</p>
+
+<p>Статья должна быть полезной, если вы только начинаете изучать Embedded-разработку: вы лучше поймёте, зачем создавали <a href="https://buildroot.org/">buildroot</a> и <a href="https://www.yoctoproject.org/">Yocto</a>.</p>
+
+<p>После прочтения статьи принципы построения Unified Kernel Image (UKI) и основы systemd становятся понятнее, так же как и инструменты, создающие initramfs, — такие как Dracut или mkinitramfs.</p>
+
+<p>Одним из минусов созданного Linux является невозможность сохранить результаты работы: всё хранится в RAM и исчезает после перезагрузки. Но это уже тема для отдельной статьи, если вам будет интересно.</p>
+
+</main>
+
+<footer class="footer">
+  <data class="u-url" value="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+      </div>
+      <div class="footer-col">
+        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li>
+    <a rel="me" href="https://github.com/jekyll/minima" target="_blank" title="Minima Theme repository at GitHub">
+      <span class="grey fa-brands fa-github fa-lg"></span>
+    </a>
+  </li><li>
+    <a rel="me" href="https://x.com/jekyllrb" target="_blank" title="Jekyll at X (formerly Twitter)">
+      <span class="grey fa-brands fa-x-twitter fa-lg"></span>
+    </a>
+  </li>
+  <li>
+    <a href="http://localhost:4000/feed.xml" target="_blank" title="Subscribe to syndication feed">
+      <svg class="svg-icon grey" width="16" height="16" viewbox="0 0 16 16">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194
+          11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0
+          13.806c0-1.21.983-2.195 2.194-2.195zM10.606
+          16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"
+        />
+      </svg>
+    </a>
+  </li>
+</ul>
+</div>
+
+  </div>
+
+</footer>
+
+ 
+
+  </body>
+</html>

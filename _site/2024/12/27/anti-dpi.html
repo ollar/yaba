@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  
+
+  
+
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+
+  <!-- <meta property="og:title" content="" /> -->
+  <!-- <meta property="og:description" content="" /> -->
+  <!-- <meta property="og:url" content="" /> -->
+  <!-- <meta property="og:image" content="" /> -->
+
+  <title>Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1 - yaba</title>
+
+  <link rel="stylesheet" href="//writ.cmcenroe.me/1.0.4/writ.min.css">
+
+  <link href="/assets/css/main.css" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css"> -->
+
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script> -->
+  <!-- <script>hljs.initHighlightingOnLoad();</script> -->
+
+</head>
+<body>
+
+    <h1 class="site-name">
+  <a class="navbar-brand" href="http://localhost:4000">yaba</a>
+</h1>
+<nav class="site-navigation"><a href="/2025/12/03/build-micro-linux.html">Собираем Linux, который весит меньше, чем мем с котиком, ну или почти…</a><a href="/2025/05/13/how-to-setup-neovim-2024.html">How I Setup Neovim On My Mac To Make it AMAZING in 2024</a><a href="/2025/02/12/docker-no-docker.html">Мой первый контейнер без Docker</a><a href="/2024/12/27/anti-dpi.html">Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1</a><a href="/2024/05/07/viborg.html">Выборг</a><a href="/2023/09/01/velikiy-novgorod.html">Великий Новгород</a><a href="/2023/06/14/dom-sovi.html">Дом Cовы на р.Тихой</a><a href="/2023/05/12/markdown-cheat-sheet.html">Markdown: Syntax</a></nav>
+
+<main class="content">
+  <h1 class="page-title">
+    Обвиваем YouTube змеем, или как смотреть и скачивать видео с YouTube без VPN на чистом Python-е. Часть 1
+  </h1>
+
+  <p><a href="https://habr.com/ru/articles/870110/">https://habr.com/ru/articles/870110/</a></p>
+
+<p>Современный мир пресыщен различной информацией, и в наше непростое время её важно уметь не только находить и сохранять. Многие наверняка заметили, что в на YouTube, кроме мусора, котиков и прочих бесполезных вещей (которые мы иногда не прочь посмотреть) есть масса полезного материала по самым различным темам. И иногда этот материал неплохо было бы сохранить себе на будущее, чтобы не зависеть от переменчивых настроений в мире.</p>
+
+<p>В этой статье я хочу рассказать, как можно скачивать видео, аудио (1 часть статьи), плейлисты и целые каналы с YouTube (2 часть статьи) без использования VPN и на чистом Python-е. Сразу оговорка: VPN нам не понадобится, но мы сделаем собственное средство, которое будет решать “проблему с устаревшим и изношенным оборудованием <a href="https://ru.wikipedia.org/wiki/Google_Global_Cache">Google Global Cache</a>” (вы поняли, о чём я). Я думаю это средство будет особенно актуально сегодня, когда у многих россиян YouTube почти или совсем не работает.</p>
+
+<h4 id="зачем-изобретать-велосипед-и-почему-python">Зачем изобретать велосипед и почему Python?</h4>
+
+<ol>
+  <li>
+    <p>Я программирую на Python, и о чём мне рассказывать как не о нём?</p>
+  </li>
+  <li>
+    <p>У python есть широкие возможности для создания таких инструментов и готовые библиотеки с большим функционалом.</p>
+  </li>
+  <li>
+    <p>Существуют такие замечательные утилиты, как yt-dlp и youtube-dl, но они подходят, когда нужно по-быстрому что-то скачать. Тонкая настройка и скачивание, например целого канала, вещь довольно геморройная (если, нет - поправьте меня), так как постоянно нужно что-то гуглить и знать многочисленные ключи и параметры.</p>
+  </li>
+  <li>
+    <p>Существуют и другие десктопные программы, мобильные приложения и сайты, но как правило они или платные, или напичканы рекламой, или ограничены в функционале, или даже всё вместе.</p>
+  </li>
+  <li>
+    <p>Ну и по-моему, собственный скрипт всегда удобнее любой навороченной утилиты, да и глаз радуется на красивые строчки в редакторе)</p>
+  </li>
+</ol>
+
+<h2 id="этап-1-обходим-блок-ой-решаем-проблему-с-устаревшим-и-изношенным-оборудованием">Этап 1. Обходим блок… ой!.. Решаем проблему с устаревшим и изношенным оборудованием.</h2>
+
+<p>Почему YouTube у нас работает не так, как надо? Конечно, все знают, что дело здесь не в оборудовании, а в том, что провайдеры используют такую зловредную (в данном случае) вещь, как <a href="https://ru.wikipedia.org/wiki/Deep_packet_inspection">DPI</a> (англ. Deep Packet Inspection «глубокая инспекция пакетов»)</p>
+
+<h3 id="how-it-works">How it works</h3>
+
+<p>Большинство DPI работает так. Когда вы пытаетесь получить доступ к заблокированному веб-сайту, DPI отправляет вам HTTP 302 Redirect, и делает это быстрее, чем веб-сайт к которому вы обращаетесь. В отличие от брандмауэров, Deep Packet Inspection анализирует не только заголовки пакетов, но и содержимое запросов, что позволяет интернет-провайдерам и государственным органам ограничивать доступ к запрещенным ресурсам, выявлять вторжения в сеть и останавливать распространение компьютерных вирусов.</p>
+
+<p>Это довольно упрощенная модель пассивного DPI, но так как целью этой статьи не является подробное ознакомление с этой темой, да и я, честно признаюсь, не большой специалист в этом, то думаю этого достаточно для понимания того, что происходит. Если вас интересует эта тема, то можете почитать <a href="https://ru.wikipedia.org/wiki/Deep_packet_inspection">здесь</a> и <a href="https://habr.com/ru/articles/111054/">здесь</a>.</p>
+
+<h3 id="что-же-делать">Что же делать</h3>
+
+<p>Но, на каждый болт найдется своя гайка, и есть способы обойти эту вещь (хотя они не всегда действуют). Многие наверняка слышали про <a href="https://github.com/ValdikSS/GoodbyeDPI">GoodbyeDPI</a> или <a href="https://github.com/bol-van/zapret">zapret</a>. Это замечательные инструменты, но раз уж мы говорим про Python, то давайте сделаем свой аналог на Python. Поискав немного, я нашел <a href="https://github.com/theo0x0/nodpi">nodpi</a>, который использует только python.</p>
+
+<h3 id="как-это-работает">Как это работает</h3>
+
+<p>nodpi создает прокси-сервер (socket), через который мы гоним трафик. Все исходящие соединения он случайным образом фрагментирует, тем самым сбивая с толку DPI.</p>
+
+<h4 id="плюсы">Плюсы</h4>
+
+<ol>
+  <li>
+    <p>Это написано на Python!</p>
+  </li>
+  <li>
+    <p>Просто, дёшево, сердито и работает для большинства провайдеров</p>
+  </li>
+  <li>
+    <p>Не требуются привилегии администратора, как, например у GoodbyeDPI</p>
+  </li>
+  <li>
+    <p>Прокси-сервер можно настроить только в некоторых приложениях и не гнать через него весь трафик системы.</p>
+  </li>
+</ol>
+
+<h4 id="минусы">Минусы</h4>
+
+<ol>
+  <li>
+    <p>Простота - не всегда качество, поэтому гарантия не даётся</p>
+  </li>
+  <li>
+    <p>Работает только для TCP</p>
+  </li>
+  <li>
+    <p>Не поможет, если сайт забанен по IP</p>
+  </li>
+</ol>
+
+<h2 id="пишем-нет---переписываем-код">Пишем…, нет - переписываем код</h2>
+
+<p>Программа написана довольно небрежно, словно у разработчика слипались глаза и он залил код прямо так, не разбираясь, и поэтому я приведу причёсанный код и заодно немного расскажу, что он делает.</p>
+
+<p>Для начала создадим текстовый файл <code class="language-plaintext highlighter-rouge">blacklist.txt</code> и добавим туда домены, блокировку которых хотим обходить. Для YouTube это:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>youtube.com
+youtu.be
+yt.be
+googlevideo.com
+ytimg.com
+ggpht.com
+gvt1.com
+youtube-nocookie.com
+youtube-ui.l.google.com
+youtubeembeddedplayer.googleapis.com
+youtube.googleapis.com
+youtubei.googleapis.com
+yt-video-upload.l.google.com
+wide-youtube.l.google.com
+</code></pre></div></div>
+
+<p>Теперь создадим файл <code class="language-plaintext highlighter-rouge">nodpi.py</code> и добавим в него следующий код</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">random</span>
+<span class="kn">import</span> <span class="n">asyncio</span>
+
+<span class="n">BLOCKED</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="p">.</span><span class="nf">rstrip</span><span class="p">().</span><span class="nf">encode</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nf">open</span><span class="p">(</span><span class="sh">'</span><span class="s">blacklist.txt</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">r</span><span class="sh">'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="sh">'</span><span class="s">utf-8</span><span class="sh">'</span><span class="p">)]</span>
+<span class="n">TASKS</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre></div></div>
+
+<p>Что мы здесь делаем:</p>
+
+<ol>
+  <li>
+    <p>Импортируем необходимые библиотеки</p>
+  </li>
+  <li>
+    <p>Создаём список заблокированных доменов</p>
+  </li>
+  <li>
+    <p>Создаём список, в котором будем хранить задачи передачи данных между клиентом и сервером</p>
+  </li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+
+    <span class="n">server</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">start_server</span><span class="p">(</span><span class="n">new_conn</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">server</span><span class="p">.</span><span class="nf">serve_forever</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Создаём входную точку - асинхронную функцию, которая запускает сокет-сервер на указанном хосте и порту и используем new_conn (ниже) для обработки новых соединений.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">pipe</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">reader</span><span class="p">.</span><span class="nf">at_eof</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">writer</span><span class="p">.</span><span class="nf">is_closing</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="k">await</span> <span class="n">reader</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="mi">1500</span><span class="p">))</span>
+            <span class="k">await</span> <span class="n">writer</span><span class="p">.</span><span class="nf">drain</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">writer</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Создаём асинхронную функцию, которая читает данные из reader и записывает их в writer до тех пор, пока не достигнут конец или соединение не закрыто.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">new_conn</span><span class="p">(</span><span class="n">local_reader</span><span class="p">,</span> <span class="n">local_writer</span><span class="p">):</span>
+
+    <span class="n">http_data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">local_reader</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">type</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">http_data</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s"> </span><span class="sh">"</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">target</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="sa">b</span><span class="sh">"</span><span class="s">:</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">local_writer</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">!=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">CONNECT</span><span class="sh">"</span><span class="p">:</span>
+        <span class="n">local_writer</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="n">local_writer</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="sa">b</span><span class="sh">'</span><span class="s">HTTP/1.1 200 OK</span><span class="se">\n\n</span><span class="sh">'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">local_writer</span><span class="p">.</span><span class="nf">drain</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">remote_reader</span><span class="p">,</span> <span class="n">remote_writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">open_connection</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">local_writer</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">port</span> <span class="o">==</span> <span class="sa">b</span><span class="sh">'</span><span class="s">443</span><span class="sh">'</span><span class="p">:</span>
+        <span class="k">await</span> <span class="nf">fragemtn_data</span><span class="p">(</span><span class="n">local_reader</span><span class="p">,</span> <span class="n">remote_writer</span><span class="p">)</span>
+
+    <span class="n">TASKS</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">asyncio</span><span class="p">.</span><span class="nf">create_task</span><span class="p">(</span><span class="nf">pipe</span><span class="p">(</span><span class="n">local_reader</span><span class="p">,</span> <span class="n">remote_writer</span><span class="p">)))</span>
+    <span class="n">TASKS</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">asyncio</span><span class="p">.</span><span class="nf">create_task</span><span class="p">(</span><span class="nf">pipe</span><span class="p">(</span><span class="n">remote_reader</span><span class="p">,</span> <span class="n">local_writer</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>Создаём асинхронную функцию, которая обрабатывает новое соединение.</p>
+  </li>
+  <li>
+    <p>Читаем HTTP-заголовки и извлекаем тип запроса и целевой адрес.</p>
+  </li>
+  <li>
+    <p>Если тип запроса не CONNECT, закрываем соединение.</p>
+  </li>
+  <li>
+    <p>Отправляем ответ HTTP/1.1 200 OK клиенту.</p>
+  </li>
+  <li>
+    <p>Открываем соединение с целевым сервером.</p>
+  </li>
+  <li>
+    <p>Если порт равен 443 (порт HTTPS), вызываем функцию <code class="language-plaintext highlighter-rouge">fragemtn_data</code> (ниже)</p>
+  </li>
+  <li>
+    <p>Создаем задачи для передачи данных между клиентом и сервером.</p>
+  </li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">fragemtn_data</span><span class="p">(</span><span class="n">local_reader</span><span class="p">,</span> <span class="n">remote_writer</span><span class="p">):</span>
+
+    <span class="n">head</span> <span class="o">=</span> <span class="k">await</span> <span class="n">local_reader</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">local_reader</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nf">all</span><span class="p">([</span><span class="n">data</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">site</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">BLOCKED</span><span class="p">]):</span>
+        <span class="n">remote_writer</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="n">head</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">remote_writer</span><span class="p">.</span><span class="nf">drain</span><span class="p">()</span>
+
+        <span class="k">return</span>
+
+    <span class="k">while</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">part_len</span> <span class="o">=</span> <span class="n">random</span><span class="p">.</span><span class="nf">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">parts</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="nb">bytes</span><span class="p">.</span><span class="nf">fromhex</span><span class="p">(</span><span class="sh">"</span><span class="s">1603</span><span class="sh">"</span><span class="p">)</span> <span class="o">+</span> <span class="nf">bytes</span><span class="p">([</span><span class="n">random</span><span class="p">.</span><span class="nf">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)])</span> <span class="o">+</span> <span class="nf">int</span><span class="p">(</span>
+            <span class="n">part_len</span><span class="p">).</span><span class="nf">to_bytes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="sh">'</span><span class="s">big</span><span class="sh">'</span><span class="p">)</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">part_len</span><span class="p">])</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">part_len</span><span class="p">:]</span>
+
+    <span class="n">remote_writer</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="sa">b</span><span class="sh">''</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
+    <span class="k">await</span> <span class="n">remote_writer</span><span class="p">.</span><span class="nf">drain</span><span class="p">()</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>Создаём асинхронную функцию, которая фрагментирует данные перед отправкой на сервер.</p>
+  </li>
+  <li>
+    <p>Читаем заголовок и данные.</p>
+  </li>
+  <li>
+    <p>Если данные не из заблокированных доменов, отправляем их без изменений.</p>
+  </li>
+  <li>
+    <p>В противном случае, разбиваем данные на случайные части и добавляем заголовки перед отправкой. Это помогает обойти блокировку DPI, так как фрагментированные данные выглядят как случайные пакеты.</p>
+  </li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">asyncio</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="nf">main</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="sh">'</span><span class="s">127.0.0.1</span><span class="sh">'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8881</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Запускаем сервер на локальном <code class="language-plaintext highlighter-rouge">127.0.0.1</code> и слушаем порт <code class="language-plaintext highlighter-rouge">8881</code></p>
+
+<p>Всё, можно пользоваться!</p>
+
+<p>Давайте проверим. Если у вас Firefox, то заходим в Настройки → Настройки сети и прописываем IP и порт:</p>
+
+<p>Открываем YouTube и убеждаемся, что все работает или не работает :)</p>
+
+<h3 id="этап-2-скачиваем">Этап 2. Скачиваем!</h3>
+
+<p>Установка необходимого инструментария</p>
+
+<p>Для начала установим библиотеку <code class="language-plaintext highlighter-rouge">pytubefix</code> командой:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install pytubefix
+</code></pre></div></div>
+
+<p>Также нам понадобится <code class="language-plaintext highlighter-rouge">ffmpeg</code>, для объединения аудио и видео (если, конечно, вы хотите скачивать в высоком качестве). Почему? Дело в том, что YouTube дает видео с аудио в одном потоке только в разрешении 360p (раньше было 720p), и чтобы скачать видео, например в 1080p, нужно сначала скачать видео в 1080p, потом скачать аудио, и затем все это объединить конвертером. ffmpeg существует и для Windows. Проверенную сборку можно скачать с моего Google Диска, но вы можете найти ее и самостоятельно в интернете.</p>
+
+<h3 id="простая-загрузка-видео">Простая загрузка видео</h3>
+
+<p>Давайте попробуем скачать какое-нибудь видео. Создайте файл <code class="language-plaintext highlighter-rouge">yt_downloader.py</code> и вставьте в него код:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">pytubefix</span> <span class="kn">import</span> <span class="n">YouTube</span>
+<span class="kn">from</span> <span class="n">pytubefix.cli</span> <span class="kn">import</span> <span class="n">on_progress</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="sh">"</span><span class="s">https://www.youtube.com/watch?v=xxxxxxxxxxx</span><span class="sh">"</span>
+
+<span class="n">video</span> <span class="o">=</span> <span class="nc">YouTube</span><span class="p">(</span>
+    <span class="n">proxies</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">http</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">http://127.0.0.1:8881</span><span class="sh">"</span><span class="p">,</span>
+             <span class="sh">"</span><span class="s">https</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">http://127.0.0.1:8881</span><span class="sh">"</span><span class="p">},</span>
+    <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+    <span class="n">on_progress_callback</span><span class="o">=</span><span class="n">on_progress</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="s">Title:</span><span class="sh">'</span><span class="p">,</span> <span class="n">yt</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+
+<span class="n">stream</span> <span class="o">=</span> <span class="n">video</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span><span class="nf">get_highest_resolution</span><span class="p">()</span>
+<span class="n">stream</span><span class="p">.</span><span class="nf">download</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Давайте разберём, что делает этот код. Сначала мы импортируем класс YouTube, с помощью которого мы скачиваем видео, и функцию <code class="language-plaintext highlighter-rouge">on_progress</code>. Она нужна для того, чтобы во время скачивания отображался прогрессбар загрузки. Согласитесь, что так гораздо удобнее? При желании можно написать свою функцию-callback. Она должна иметь аргументы <code class="language-plaintext highlighter-rouge">(stream: Stream, chunk: bytes, bytes_remaining: int)</code></p>
+
+<p>В переменную <code class="language-plaintext highlighter-rouge">url</code> вставьте свою ссылку для скачивания, так как я заменил id видео иксами. Далее мы создаем экземпляр класса YouTube и передаем ему словарь с адресом нашего прокси-сервера, url и callback. Все аргументы, кроме url являются необязательными. Также стоит отметить, что callback вызывается каждый раз, после скачивания нового чанка (pytubefix скачивает видео кусками - чанками).</p>
+
+<p>Далее мы выводим на экран заголовок (название) видео. Также можно узнать дату публикации, длину видео (в секундах), описание, количество просмотров и автора. Размер файла можно узнать с помощью <code class="language-plaintext highlighter-rouge">stream.filesize</code>, так как он зависит от выбранного потока.</p>
+
+<p>В строке <code class="language-plaintext highlighter-rouge">stream = video.streams.get_highest_resolution()</code> мы получаем список потоков и сортируем его по разрешению (качеству) видео. Тут я хочу остановиться и рассказать немного подробнее. У каждого видео на YouTube есть несколько десятков потоков, каждый из которых представляет собой одно видео, одно аудио или все сразу в разных форматах, кодировках и качестве. Так, для моего видео список потоков выглядит примерно так:</p>
+
+<p>Вы можете посмотреть полный список потоков для своего видео, просто выведя на экран <code class="language-plaintext highlighter-rouge">print(video.streams)</code>, но как правило это не требуется, так как библиотека предоставляет средства для их сортировки и фильтрации. В нашем случае это get_highest_resolution(). Эта функция возвращает поток с самым лучшим разрешением, который содержит и аудио, и видео. Как я уже объяснял, таким разрешением окажется 360p, потому что YouTube дает видео с аудио в одном потоке только в разрешении 360p (раньше было 720p), и чтобы скачать видео, например в 1080p, нужно сначала скачать видео в 1080p, потом скачать аудио, и затем все это объединить конвертером. Скрипт, который скачивает видео в более высоком качестве, мы напишем чуть позднее.</p>
+
+<p>Ну и наконец, в строке stream.download() мы скачиваем видео. При скачивании будет отображаться прогрессбар, и вы увидите процесс загрузки.</p>
+
+<p>Запустите скрипт и посмотрите результат. <strong>Не забудьте перед этим запустить нашу программу для обхода DPI!</strong></p>
+
+<h3 id="скачиваем-видео-в-высоком-разрешении">Скачиваем видео в высоком разрешении</h3>
+
+<p>Видео в 360p, это, конечно, не очень. Давайте расширим нашу программу. Если вы еще не скачали <code class="language-plaintext highlighter-rouge">ffmpeg</code>, сделайте это. Без него скачивание в другом расширении невозможно. Предполагается, что <code class="language-plaintext highlighter-rouge">ffmpeg</code> лежит в той же папке, что и скрипт.</p>
+
+<p>Создайте файл <code class="language-plaintext highlighter-rouge">yt_downloader_2.py</code> и добавьте в него следующий код:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">os</span>
+
+<span class="kn">from</span> <span class="n">pytubefix</span> <span class="kn">import</span> <span class="n">YouTube</span>
+<span class="kn">from</span> <span class="n">pytubefix.cli</span> <span class="kn">import</span> <span class="n">on_progress</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="sh">"</span><span class="s">https://www.youtube.com/watch?v=xxxxxxxxxxx</span><span class="sh">"</span>
+
+
+<span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">audio</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">video</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="nf">exists</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+        <span class="n">os</span><span class="p">.</span><span class="nf">remove</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="n">code</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="nf">system</span><span class="p">(</span>
+        <span class="sa">f</span><span class="sh">'</span><span class="s">.</span><span class="se">\\</span><span class="s">ffmpeg.exe -i </span><span class="sh">"</span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="sh">"</span><span class="s"> -i </span><span class="sh">"</span><span class="si">{</span><span class="n">audio</span><span class="si">}</span><span class="sh">"</span><span class="s"> -c copy </span><span class="sh">"</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="sh">"'</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nc">SystemError</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+    <span class="n">yt</span> <span class="o">=</span> <span class="nc">YouTube</span><span class="p">(</span>
+        <span class="n">proxies</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">http</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">http://127.0.0.1:8881</span><span class="sh">"</span><span class="p">,</span>
+                 <span class="sh">"</span><span class="s">https</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">http://127.0.0.1:8881</span><span class="sh">"</span><span class="p">},</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+        <span class="n">on_progress_callback</span><span class="o">=</span><span class="n">on_progress</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">video_stream</span> <span class="o">=</span> <span class="n">yt</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span>\
+        <span class="nf">filter</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="sh">'</span><span class="s">video</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">order_by</span><span class="p">(</span><span class="sh">'</span><span class="s">resolution</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">desc</span><span class="p">().</span><span class="nf">first</span><span class="p">()</span>
+
+    <span class="n">audio_stream</span> <span class="o">=</span> <span class="n">yt</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span>\
+        <span class="nf">filter</span><span class="p">(</span><span class="n">mime_type</span><span class="o">=</span><span class="sh">'</span><span class="s">audio/mp4</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">order_by</span><span class="p">(</span><span class="sh">'</span><span class="s">filesize</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">desc</span><span class="p">().</span><span class="nf">first</span><span class="p">()</span>
+
+    <span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="s">Information:</span><span class="sh">'</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Title:</span><span class="sh">"</span><span class="p">,</span> <span class="n">yt</span><span class="p">.</span><span class="n">title</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Author:</span><span class="sh">"</span><span class="p">,</span> <span class="n">yt</span><span class="p">.</span><span class="n">author</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Date:</span><span class="sh">"</span><span class="p">,</span> <span class="n">yt</span><span class="p">.</span><span class="n">publish_date</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Resolution:</span><span class="sh">"</span><span class="p">,</span> <span class="n">video_stream</span><span class="p">.</span><span class="n">resolution</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Views:</span><span class="sh">"</span><span class="p">,</span> <span class="n">yt</span><span class="p">.</span><span class="n">views</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Length:</span><span class="sh">"</span><span class="p">,</span> <span class="nf">round</span><span class="p">(</span><span class="n">yt</span><span class="p">.</span><span class="n">length</span><span class="o">/</span><span class="mi">60</span><span class="p">),</span> <span class="sh">"</span><span class="s">minutes</span><span class="sh">"</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Filename of the video:</span><span class="sh">"</span><span class="p">,</span> <span class="n">video_stream</span><span class="p">.</span><span class="n">default_filename</span><span class="p">)</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="se">\t</span><span class="s">Filesize of the video:</span><span class="sh">"</span><span class="p">,</span> <span class="nf">round</span><span class="p">(</span>
+        <span class="n">video_stream</span><span class="p">.</span><span class="n">filesize</span> <span class="o">/</span> <span class="mi">1000000</span><span class="p">),</span> <span class="sh">"</span><span class="s">MB</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="s">Download video...</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">video_stream</span><span class="p">.</span><span class="nf">download</span><span class="p">()</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sh">'</span><span class="se">\n</span><span class="s">Download audio...</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">audio_stream</span><span class="p">.</span><span class="nf">download</span><span class="p">()</span>
+
+    <span class="nf">combine</span><span class="p">(</span><span class="n">audio_stream</span><span class="p">.</span><span class="n">default_filename</span><span class="p">,</span> <span class="n">video_stream</span><span class="p">.</span><span class="n">default_filename</span><span class="p">,</span>
+            <span class="sa">f</span><span class="sh">'</span><span class="si">{</span><span class="n">yt</span><span class="p">.</span><span class="n">title</span><span class="si">}</span><span class="s">.mp4</span><span class="sh">'</span><span class="p">)</span>
+
+<span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Что изменилось? Мы добавили функцию combine, которая отвечает за объединение видео и аудио. Мы делаем это командой <code class="language-plaintext highlighter-rouge">.\ffmpeg.exe -i "filename_video" -i "filename_audio" -c copy "output_filename"</code></p>
+
+<p>В основном коде мы по отдельности вытаскиваем потоки видео и аудио. Здесь видео не содержит аудио, но зато оно в высоком качестве. Чтобы получить его, мы сначала фильтруем потоки по типу (видео) <code class="language-plaintext highlighter-rouge">filter(type='video')</code>,  затем сортируем по разрешению, затем сортируем по убыванию разрешения и берём первый поток. Аналогично с аудио. После этого мы выводим подробную информацию о скачиваемом видео и скачиваем аудио и видео по отдельности, после чего объединяем их с помощью ffmpeg. Ничего сложного!</p>
+
+<p>Запускаем наш скрипт для обхода DPI и скрипт для скачивания (замените url на свой). Готово!</p>
+
+<h3 id="как-узнать-список-доступных-разрешений">Как узнать список доступных разрешений</h3>
+
+<p>Чтобы узнать, в каких разрешениях можно скачать данное видео, можно написать такую функцию:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolutions</span><span class="p">(</span><span class="n">video</span><span class="p">:</span> <span class="n">YouTube</span><span class="p">):</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">streams</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">video</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span>\
+                    <span class="nf">filter</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="sh">'</span><span class="s">video</span><span class="sh">'</span><span class="p">).</span>\
+                    <span class="nf">order_by</span><span class="p">(</span><span class="sh">'</span><span class="s">resolution</span><span class="sh">'</span><span class="p">).</span>\
+                    <span class="nf">desc</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stream</span><span class="p">.</span><span class="n">resolution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">stream</span><span class="p">.</span><span class="n">resolution</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div></div>
+
+<p>Поток с выбранным разрешением можно получить следующим образом:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">res</span> <span class="o">=</span> <span class="sh">'</span><span class="s">1080p</span><span class="sh">'</span> <span class="c1"># например
+</span><span class="n">stream</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">video</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span>\
+          <span class="nf">filter</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">progressive</span><span class="o">=</span><span class="bp">False</span><span class="p">).</span><span class="nf">desc</span><span class="p">().</span><span class="nf">first</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Если вы не используете <code class="language-plaintext highlighter-rouge">ffmpeg</code>, замените <code class="language-plaintext highlighter-rouge">progressive=False</code> на <code class="language-plaintext highlighter-rouge">True</code></p>
+
+<h3 id="скачивание-аудио">Скачивание аудио</h3>
+
+<p>Из предыдущего примера вы видели, как мы скачивали аудио:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">...</span>
+
+<span class="n">audio_stream</span> <span class="o">=</span> <span class="n">yt</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span>\
+        <span class="nf">filter</span><span class="p">(</span><span class="n">mime_type</span><span class="o">=</span><span class="sh">'</span><span class="s">audio/mp4</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">order_by</span><span class="p">(</span><span class="sh">'</span><span class="s">filesize</span><span class="sh">'</span><span class="p">).</span>\
+        <span class="nf">desc</span><span class="p">().</span><span class="nf">first</span><span class="p">()</span>
+
+<span class="n">audio_stream</span><span class="p">.</span><span class="nf">download</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Только учтите, что формат аудио будет m4a, поэтому, если вам нужен другой, придётся воспользоваться <code class="language-plaintext highlighter-rouge">ffmpeg</code></p>
+
+<h3 id="известные-проблемы">Известные проблемы</h3>
+
+<h4 id="обход-dpi-не-работает">Обход DPI не работает</h4>
+
+<p>Да, такое, конечно, возможно. Но у меня на провайдере ТТК всё работает отлично. Поэтому я могу лишь посоветовать использовать другие инструменты, например GoodbyeDPI.</p>
+
+<h4 id="remote-end-closed-connection">Remote end closed connection</h4>
+
+<p>А вот это действительно проблема, с которой я столкнулся. Она появилась, когда начали тормозить YouTube и я перешёл на nodpi. То ли ютуб банит подозрительную активность, то ли РКН химичит, а может в nodpi что-то не так. Я так и не понял. Если тут есть знатоки, может подскажут, что не так и как пофиксить)</p>
+
+
+</main>
+
+<footer class="footer">
+  <data class="u-url" value="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+      </div>
+      <div class="footer-col">
+        <p>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li>
+    <a rel="me" href="https://github.com/jekyll/minima" target="_blank" title="Minima Theme repository at GitHub">
+      <span class="grey fa-brands fa-github fa-lg"></span>
+    </a>
+  </li><li>
+    <a rel="me" href="https://x.com/jekyllrb" target="_blank" title="Jekyll at X (formerly Twitter)">
+      <span class="grey fa-brands fa-x-twitter fa-lg"></span>
+    </a>
+  </li>
+  <li>
+    <a href="http://localhost:4000/feed.xml" target="_blank" title="Subscribe to syndication feed">
+      <svg class="svg-icon grey" width="16" height="16" viewbox="0 0 16 16">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194
+          11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0
+          13.806c0-1.21.983-2.195 2.194-2.195zM10.606
+          16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"
+        />
+      </svg>
+    </a>
+  </li>
+</ul>
+</div>
+
+  </div>
+
+</footer>
+
+ 
+
+  </body>
+</html>
