@@ -39,6 +39,11 @@ paginate: 5
 
 lang: ru
 
+categories_order:
+  - life
+  - habr
+  - other
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to

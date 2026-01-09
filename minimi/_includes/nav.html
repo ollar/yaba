@@ -1,6 +1,24 @@
 <nav class="site-navigation">
-  {%- for post in site.posts -%}
-  <a href="{{post.url}}">{{post.title}}</a>
-  {%- endfor -%}
+  <ul>
+
+    {%- for category_name in site.categories_order -%}
+    {% assign category = site.categories[category_name] %}
+    <li class="site-navigation__category nav-item">
+      <h4>
+        <a href="{{ '/category/' | append: category_name | url}}">
+          {{category_name}}&nbsp;↓
+        </a>
+      </h4>
+
+      <ul class="site-navigation__docs">
+        {%- for post in category -%}
+        <li>
+          <a href="{{post.url}}">{{post.title}}</a>
+        </li>
+        {%- endfor -%}
+      </ul>      
+    </li>
+    {%- endfor -%}
+  </ul> 
 </nav>
 
