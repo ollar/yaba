@@ -4,6 +4,7 @@ description: поездка в г. Великий Новгород, 25 авгу�
 title: "Великий Новгород" 
 layout: post
 categories: life
+toc: true
 ---
 
 

@@ -194,3 +194,42 @@ body > footer, main {
 .post-meta {
   color: #666;
 }
+
+.social-links {
+  margin: 1rem 0;
+
+  .social-media-list {
+    margin: 0;
+    padding: 0;
+    
+    li {
+      display: inline-block;
+
+      a {
+        display: block;
+        padding: 0.5rem 1rem;
+      }
+    }
+  }
+}
+
+.pager {
+  margin: 1rem 0;
+
+  .pagination {
+    display: flex;
+    margin: 0;
+    padding: 0;
+
+    li {
+      display: block;
+      font-size: 1.2rem;
+
+      .current-page,
+      a {
+        display: block;
+        padding: 0.2rem 0.5rem;
+      }
+    }
+  }
+} 

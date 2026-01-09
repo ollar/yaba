@@ -2,6 +2,7 @@
 layout: post
 title: How I Setup Neovim On My Mac To Make it AMAZING in 2024
 categories: other
+toc: true
 ---
 
 original: <https://www.josean.com/posts/how-to-setup-neovim-2024>

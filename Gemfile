@@ -33,4 +33,5 @@ gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
 
 gem "minimi", path: "./_minimi"
 gem "jekyll-paginate"
+gem 'jekyll-toc'
 

@@ -3,20 +3,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   {% if page.description %}
-  <meta name="description" content="{{page.meta.description}}" />
-  {% elsif page and page.is_homepage %}
-  <meta name="description" content="{{ config['site_description'] }}" />
+  <meta name="description" content="{{page.description}}" />
+  {% elsif site.description %}
+  <meta name="description" content="{{site.description}}" />
   {% endif %}
 
   {% if page.meta.author %}
-  <meta name="author" content="{{ page.meta.author }}">
-  {% elsif config.site_author %}
-  <meta name="author" content="{{ config.site_author }}">
+  <meta name="author" content="{{ site.author }}">
   {% endif %}
 
   {% if page and page.canonical_url %}<link rel="canonical" href="{{ page.canonical_url }}">{% endif %}
-  {% if config.site_favicon %}<link rel="shortcut icon" href="{{ config.site_favicon|url }}">
-  {% else %}<link rel="shortcut icon" href="{{ 'img/favicon.ico'|url }}">{% endif %}
+  <link rel="shortcut icon" href="{{ '/assets/favicon.ico'|url }}">
 
   <!-- <meta property="og:title" content="{{page.meta.social_tags_title}}" /> -->
   <!-- <meta property="og:description" content="{{page.meta.description}}" /> -->
